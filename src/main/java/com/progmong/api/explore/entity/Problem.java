@@ -11,17 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Problem {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "problem_id")
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "monster_id")
-    private Monster monster;
 
     private String title;
     private int level;
     private String mainTag;
+    private int solvedUserCount;
 
 }
