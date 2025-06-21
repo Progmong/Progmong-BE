@@ -21,11 +21,9 @@ public class SolvedAcImportService {
 
     private final ProblemRepository problemRepository;
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final Set<String> ALLOWED_TAGS = Set.of(
-            "math", "implementation", "greedy", "string",
-            "data_structures", "graphs", "dp", "geometry"
+    private static final List<String> TAG_PRIORITY = List.of(
+            "geometry", "dp", "graphs", "data_structures", "greedy", "string", "implementation", "math"
     );
-
     public boolean isProblemTableEmpty() {
         return problemRepository.count() == 0;
     }
@@ -41,14 +39,14 @@ public class SolvedAcImportService {
 
         int totalSaved = 0;
 
-        for (int page = 1; page <= 5; page++) {
+        for (int page = 6; page <= 10; page++) {
             String tagQuery = "tag:math or tag:implementation or tag:greedy or tag:string or " +
                     "tag:data_structures or tag:graphs or tag:dp or tag:geometry";
 
             String url = UriComponentsBuilder
                     .fromHttpUrl("https://solved.ac/api/v3/search/problem")
-                    .queryParam("query", "s:5..15 " + tagQuery)
-                    .queryParam("sort", "solved")
+                    .queryParam("query", "s:1..25 " + tagQuery)
+                    .queryParam("sort", "random")
                     .queryParam("direction", "desc")
                     .queryParam("page", page)
                     .toUriString();
@@ -72,14 +70,15 @@ public class SolvedAcImportService {
 
                             return item.getTags().stream()
                                     .map(SolvedAcProblemResponseDto.ProblemItem.Tag::getKey)
-                                    .anyMatch(ALLOWED_TAGS::contains);
+                                    .anyMatch(TAG_PRIORITY::contains);
                         })
                         .map(item -> {
-                            String mainTag = item.getTags().stream()
-                                    .map(SolvedAcProblemResponseDto.ProblemItem.Tag::getKey) // Tag 클래스를 직접 명시
-                                    .filter(ALLOWED_TAGS::contains)
+                            String mainTag = TAG_PRIORITY.stream()
+                                    .filter(priorityTag -> item.getTags().stream()
+                                            .map(SolvedAcProblemResponseDto.ProblemItem.Tag::getKey)
+                                            .anyMatch(priorityTag::equals))
                                     .findFirst()
-                                    .orElseThrow(() -> new IllegalStateException("적절한 태그 없음"));
+                                    .orElseThrow(() -> new IllegalStateException("적절한 대표 태그 없음"));
                             return new Problem(
                                     (long) item.getProblemId(),
                                     item.getTitleKo(),

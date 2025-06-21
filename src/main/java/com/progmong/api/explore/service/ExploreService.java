@@ -57,6 +57,7 @@ public class ExploreService {
                     .user(user)
                     .problem(recommend.get(i))
                     .status(i == 0 ? RecommendStatus.전투 : RecommendStatus.대기)
+                    .sequence(i + 1)
                     .build();
             recommendProblems.add(rp);
         }
@@ -77,7 +78,8 @@ public class ExploreService {
                             p.getLevel(),
                             p.getMainTag(),
                             p.getSolvedUserCount(),
-                            rp.getStatus()
+                            rp.getStatus(),
+                            rp.getSequence()
                     );
                 })
                 .toList();

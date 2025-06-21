@@ -29,4 +29,7 @@ public class RecommendProblem {
 
     @Enumerated(EnumType.STRING)
     private RecommendStatus status;
+
+    @Column(name = "sequence", nullable = false)
+    private int sequence;
 }

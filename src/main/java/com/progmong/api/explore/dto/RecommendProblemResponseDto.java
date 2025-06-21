@@ -13,4 +13,5 @@ public class RecommendProblemResponseDto {
     private String mainTag;
     private int solvedUserCount;
     private RecommendStatus status;
+    private int sequence;
 }
