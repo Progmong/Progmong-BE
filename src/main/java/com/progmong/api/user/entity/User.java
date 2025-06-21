@@ -1,10 +1,14 @@
 package com.progmong.api.user.entity;
 
+import com.progmong.api.tag.entity.InterestTag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -25,4 +29,8 @@ public class User {
     private String password;
 
     private String bojId;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<InterestTag> interestTags = new ArrayList<>();
 }
