@@ -44,4 +44,8 @@ public class UserPet extends BaseTimeEntity {
 
     @ColumnDefault("1")
     private int evolutionStage;
+
+    public void updateStatus(PetStatus status) {
+        this.status = status;
+    }
 }

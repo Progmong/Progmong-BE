@@ -26,6 +26,8 @@ public enum ErrorStatus {
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 글을 찾을 수 없습니다."),
     PET_NOT_FOUND(HttpStatus.NOT_FOUND, "펫 정보를 찾을 수 없습니다."),
     PROBLEM_NOT_FOUND(HttpStatus.NOT_FOUND, "문제를 찾을 수 없습니다."),
+    USER_PET_NOT_FOUND(HttpStatus.NOT_FOUND,"유저의 펫을 찾을 수 없습니다."),
+    USER_INTEREST_NOT_FOUND(HttpStatus.NOT_FOUND,"유저의 태그 정보가 없습니다."),
 
     // 409 CONFLICT
     CONFLICT(HttpStatus.CONFLICT, "충돌이 발생했습니다."),
