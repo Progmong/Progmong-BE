@@ -54,14 +54,14 @@ public class SolvedAcImportService {
                     .toUriString();
 
             try {
-                ResponseEntity<SolvedAcProblemResponse> response = restTemplate.exchange(
+                ResponseEntity<SolvedAcProblemResponseDto> response = restTemplate.exchange(
                         url,
                         HttpMethod.GET,
                         entity,
-                        SolvedAcProblemResponse.class
+                        SolvedAcProblemResponseDto.class
                 );
 
-                SolvedAcProblemResponse body = response.getBody();
+                SolvedAcProblemResponseDto body = response.getBody();
                 if (body == null || body.getItems() == null) {
                     log.warn("❌ {}페이지 응답 없음", page);
                     continue;
@@ -71,12 +71,12 @@ public class SolvedAcImportService {
                         .filter(item -> {
 
                             return item.getTags().stream()
-                                    .map(SolvedAcProblemResponse.ProblemItem.Tag::getKey)
+                                    .map(SolvedAcProblemResponseDto.ProblemItem.Tag::getKey)
                                     .anyMatch(ALLOWED_TAGS::contains);
                         })
                         .map(item -> {
                             String mainTag = item.getTags().stream()
-                                    .map(SolvedAcProblemResponse.ProblemItem.Tag::getKey) // Tag 클래스를 직접 명시
+                                    .map(SolvedAcProblemResponseDto.ProblemItem.Tag::getKey) // Tag 클래스를 직접 명시
                                     .filter(ALLOWED_TAGS::contains)
                                     .findFirst()
                                     .orElseThrow(() -> new IllegalStateException("적절한 태그 없음"));

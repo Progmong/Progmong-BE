@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class SolvedAcProblemResponse {
+public class SolvedAcProblemResponseDto {
     private int count;
     private List<ProblemItem> items;
 
