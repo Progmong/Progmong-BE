@@ -28,6 +28,9 @@ public enum ErrorStatus {
     PROBLEM_NOT_FOUND(HttpStatus.NOT_FOUND, "문제를 찾을 수 없습니다."),
     USER_PET_NOT_FOUND(HttpStatus.NOT_FOUND,"유저의 펫을 찾을 수 없습니다."),
     USER_INTEREST_NOT_FOUND(HttpStatus.NOT_FOUND,"유저의 태그 정보가 없습니다."),
+    RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND(HttpStatus.NOT_FOUND, "전투 중인 추천 문제를 찾을 수 없습니다."),
+    NEXT_RECOMMEND_PROBLEM_NOT_FOUND(HttpStatus.NOT_FOUND, "다음 추천 문제를 찾을 수 없습니다."),
+
 
     // 409 CONFLICT
     CONFLICT(HttpStatus.CONFLICT, "충돌이 발생했습니다."),

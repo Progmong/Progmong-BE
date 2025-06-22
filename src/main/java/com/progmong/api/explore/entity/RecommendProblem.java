@@ -32,4 +32,8 @@ public class RecommendProblem {
 
     @Column(name = "sequence", nullable = false)
     private int sequence;
+
+    public void updateStatus(RecommendStatus status) {
+        this.status = status;
+    }
 }

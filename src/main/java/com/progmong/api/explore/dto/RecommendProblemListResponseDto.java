@@ -7,6 +7,6 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class ExploreStartResponseDto {
-    private List<RecommendProblemResponseDto> recommendedProblems;
+public class RecommendProblemListResponseDto {
+    private List<RecommendProblemResponseDto> recommendProblems;
 }
