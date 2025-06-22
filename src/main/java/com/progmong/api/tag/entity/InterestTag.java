@@ -4,9 +4,11 @@ package com.progmong.api.tag.entity;
 import com.progmong.api.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Builder
 @Entity
 @Table(name = "interest_tag")
 @Getter

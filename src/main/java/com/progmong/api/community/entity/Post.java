@@ -4,11 +4,12 @@ import com.progmong.api.user.entity.User;
 import com.progmong.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
-// Post
+@Builder
 @Entity
 @Table(name = "post")
 @Getter

@@ -4,12 +4,13 @@ import com.progmong.api.user.entity.User;
 import com.progmong.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 
-// UserPet
+@Builder
 @Entity
 @Table(name = "user_pet")
 @Getter
@@ -39,7 +40,10 @@ public class UserPet extends BaseTimeEntity {
     private PetStatus status;
 
     private String message;
-    private boolean isProud = false;
+
+    @ColumnDefault("false")
+    private boolean isProud;
+
     private String nickname;
 
     @ColumnDefault("1")

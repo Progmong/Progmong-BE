@@ -5,7 +5,7 @@ import com.progmong.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-
+@Builder
 @Entity
 @Table(name = "comment")
 @Getter

@@ -3,10 +3,12 @@ package com.progmong.api.explore.entity;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 // ExpRule
+@Builder
 @Entity
 @Table(name = "exp_rule")
 @Getter
