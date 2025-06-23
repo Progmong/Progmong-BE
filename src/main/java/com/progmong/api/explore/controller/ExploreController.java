@@ -1,7 +1,7 @@
 package com.progmong.api.explore.controller;
 
 import com.progmong.api.explore.dto.ExploreStartRequestDto;
-import com.progmong.api.explore.dto.ExploreStartResponseDto;
+import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.service.ExploreService;
 import com.progmong.common.response.ApiResponse;
 import com.progmong.common.response.SuccessStatus;
@@ -20,7 +20,7 @@ public class ExploreController {
 
     private final ExploreService exploreService;
 
-    @PostMapping("/start")
+    @PostMapping
     @Operation(
             summary = "탐험 시작",
             description = "유저의 펫 상태를 전투로 변경하고 문제 5개를 추천합니다."
@@ -28,11 +28,41 @@ public class ExploreController {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 시작 성공")
     })
-    public ResponseEntity<ApiResponse<ExploreStartResponseDto>> startExplore(
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> startExplore(
             Long userId,    // jwt 구현 시 변경
             @RequestBody ExploreStartRequestDto requestDto
     ) {
-        ExploreStartResponseDto exploreStartResponseDto = exploreService.startExplore(userId,requestDto.getMinLevel(), requestDto.getMaxLevel());
-        return ApiResponse.success(SuccessStatus.EXPLORE_START,exploreStartResponseDto);
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.startExplore(userId,requestDto.getMinLevel(), requestDto.getMaxLevel());
+        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+    }
+
+    @PostMapping("/pass")
+    @Operation(
+            summary = "탐험 패스",
+            description = "현재 문제를 패스하고 다음 문제로 전환"
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 패스 성공")
+    })
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> passExplore(
+            Long userId   // jwt 구현 시 변경
+    ) {
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.passExplore(userId);
+        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "현재 탐험 조회",
+            description = "현재 진행 중인 탐험의 문제들을 조회"
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 조회 성공")
+    })
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> currentExplore(
+            Long userId   // jwt 구현 시 변경
+    ) {
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.currentExplore(userId);
+        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
     }
 }

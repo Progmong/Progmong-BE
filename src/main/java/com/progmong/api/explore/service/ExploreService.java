@@ -1,7 +1,7 @@
 package com.progmong.api.explore.service;
 
 
-import com.progmong.api.explore.dto.ExploreStartResponseDto;
+import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
 import com.progmong.api.explore.entity.Problem;
 import com.progmong.api.explore.entity.RecommendProblem;
@@ -20,7 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +34,7 @@ public class ExploreService {
     private final RecommendProblemRepository recommendProblemRepository;
 
     @Transactional
-    public ExploreStartResponseDto startExplore(Long userId, int minLevel, int maxLevel) {
+    public RecommendProblemListResponseDto startExplore(Long userId, int minLevel, int maxLevel) {
         // 1. 유저의 관심 태그 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
@@ -52,12 +55,20 @@ public class ExploreService {
 
         // 3. 첫 문제는 전투, 나머지는 대기로 상태 나눠서 저장
         List<RecommendProblem> recommendProblems = new ArrayList<>();
+        List<Integer> monsterIndices = IntStream.rangeClosed(1, 10)
+                .boxed()
+                .collect(Collectors.toList());
+
+        Collections.shuffle(monsterIndices);
         for (int i = 0; i < recommend.size(); i++) {
+            Problem p = recommend.get(i);
             RecommendProblem rp = RecommendProblem.builder()
                     .user(user)
-                    .problem(recommend.get(i))
+                    .problem(p)
                     .status(i == 0 ? RecommendStatus.전투 : RecommendStatus.대기)
                     .sequence(i + 1)
+                    .exp(p.getLevel() * 10)
+                    .monsterImageIndex(monsterIndices.get(i))
                     .build();
             recommendProblems.add(rp);
         }
@@ -70,20 +81,42 @@ public class ExploreService {
 
         // 4. 응답 DTO로 변환
         List<RecommendProblemResponseDto> recommendProblemResponseDto = recommendProblems.stream()
-                .map(rp -> {
-                    Problem p = rp.getProblem();
-                    return new RecommendProblemResponseDto(
-                            p.getId(),
-                            p.getTitle(),
-                            p.getLevel(),
-                            p.getMainTag(),
-                            p.getSolvedUserCount(),
-                            rp.getStatus(),
-                            rp.getSequence()
-                    );
-                })
+                .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
 
-        return new ExploreStartResponseDto(recommendProblemResponseDto);
+        return new RecommendProblemListResponseDto(recommendProblemResponseDto);
+    }
+
+    @Transactional
+    public RecommendProblemListResponseDto passExplore(Long userId) {
+        // 1. 현재 전투 중인 문제를 패스로 변경
+        RecommendProblem current = recommendProblemRepository.findByUserIdAndStatus(userId, RecommendStatus.전투)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
+        current.updateStatus(RecommendStatus.패스);
+
+        // 2. 다음 순서 문제를 전투로 변경
+        int nextSequence = current.getSequence() + 1;
+        RecommendProblem next = recommendProblemRepository
+                .findByUserIdAndSequence(userId, nextSequence)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.NEXT_RECOMMEND_PROBLEM_NOT_FOUND.getMessage()));
+        next.updateStatus(RecommendStatus.전투);
+
+        // 3. 다시 추천 문제 전체 조회하여 반환
+        List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
+        List<RecommendProblemResponseDto> recommendProblemResponseDto = recommendProblems.stream()
+                .map(RecommendProblemResponseDto::fromEntity)
+                .toList();
+        return new RecommendProblemListResponseDto(recommendProblemResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    public RecommendProblemListResponseDto currentExplore(Long userId) {
+        List<RecommendProblem> problems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
+
+        List<RecommendProblemResponseDto> problemDtos = problems.stream()
+                .map(RecommendProblemResponseDto::fromEntity)
+                .toList();
+
+        return new RecommendProblemListResponseDto(problemDtos);
     }
 }
