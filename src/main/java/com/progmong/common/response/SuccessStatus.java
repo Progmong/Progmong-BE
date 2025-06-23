@@ -19,7 +19,10 @@ public enum SuccessStatus {
     PET_REGISTERED(HttpStatus.CREATED, "펫 등록이 완료되었습니다."),
     POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
 
-    EXPLORE_START(HttpStatus.OK, "탐험 시작 성공");
+    EXPLORE_START(HttpStatus.OK, "탐험 시작 성공"),
+    GET_ALL_RECORD(HttpStatus.OK, "모든 사냥 기록 조회에 성공했습니다."),
+    GET_PAGED_RECORD(HttpStatus.OK, "페이지네이션이 적용된 사냥 기록 조회에 성공했습니다."),
+    GET_ALL_RECORD_COUNT(HttpStatus.OK, "모든 사냔 기록의 갯수 조회를 성공했습니다." ),;
 
     private final HttpStatus httpStatus;
     private final String message;
