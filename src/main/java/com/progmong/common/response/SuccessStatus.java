@@ -19,7 +19,9 @@ public enum SuccessStatus {
     PET_REGISTERED(HttpStatus.CREATED, "펫 등록이 완료되었습니다."),
     POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
 
-    EXPLORE_START(HttpStatus.OK, "탐험 시작 성공");
+    EXPLORE_START(HttpStatus.OK, "탐험 시작 성공"),
+    EXPLORE_GET(HttpStatus.OK,"탐험 조회 성공"),
+    EXPLORE_PROBLEM_SUCCESS(HttpStatus.OK, "탐험 문제 풀이 성공");
 
     private final HttpStatus httpStatus;
     private final String message;

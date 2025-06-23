@@ -1,5 +1,6 @@
 package com.progmong.api.explore.entity;
 
+import com.progmong.api.pet.entity.PetStatus;
 import com.progmong.api.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,4 +30,8 @@ public class ProblemRecord {
 
     @Enumerated(EnumType.STRING)
     private Result result;
+
+    public void updateResult(Result result) {
+        this.result = result;
+    }
 }

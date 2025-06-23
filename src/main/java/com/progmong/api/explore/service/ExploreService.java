@@ -3,11 +3,11 @@ package com.progmong.api.explore.service;
 
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
-import com.progmong.api.explore.entity.Problem;
-import com.progmong.api.explore.entity.RecommendProblem;
-import com.progmong.api.explore.entity.RecommendStatus;
+import com.progmong.api.explore.entity.*;
+import com.progmong.api.explore.repository.ProblemRecordRepository;
 import com.progmong.api.explore.repository.ProblemRepository;
 import com.progmong.api.explore.repository.RecommendProblemRepository;
+import com.progmong.api.explore.repository.SolvedProblemRepository;
 import com.progmong.api.pet.entity.PetStatus;
 import com.progmong.api.pet.entity.UserPet;
 import com.progmong.api.pet.repository.UserPetRepository;
@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,6 +33,8 @@ public class ExploreService {
     private final UserRepository userRepository;
     private final UserPetRepository userPetRepository;
     private final RecommendProblemRepository recommendProblemRepository;
+    private final ProblemRecordRepository problemRecordRepository;
+    private final SolvedProblemRepository solvedProblemRepository;
 
     @Transactional
     public RecommendProblemListResponseDto startExplore(Long userId, int minLevel, int maxLevel) {
@@ -84,7 +87,7 @@ public class ExploreService {
                 .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
 
-        return new RecommendProblemListResponseDto(recommendProblemResponseDto);
+        return new RecommendProblemListResponseDto(recommendProblemResponseDto,false,null);
     }
 
     @Transactional
@@ -94,19 +97,55 @@ public class ExploreService {
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
         current.updateStatus(RecommendStatus.패스);
 
-        // 2. 다음 순서 문제를 전투로 변경
-        int nextSequence = current.getSequence() + 1;
-        RecommendProblem next = recommendProblemRepository
-                .findByUserIdAndSequence(userId, nextSequence)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.NEXT_RECOMMEND_PROBLEM_NOT_FOUND.getMessage()));
-        next.updateStatus(RecommendStatus.전투);
+        // 2. 문제 기록 저장 (이미 존재하면 생략)
+        boolean exists = problemRecordRepository
+                .findByUserIdAndProblemId(userId, current.getProblem().getId())
+                .isPresent();
 
-        // 3. 다시 추천 문제 전체 조회하여 반환
+        if (!exists) {
+            ProblemRecord problemRecord = ProblemRecord.builder()
+                    .user(current.getUser())
+                    .problem(current.getProblem())
+                    .result(Result.실패)
+                    .build();
+            problemRecordRepository.save(problemRecord);
+        }
+
+
+        // 3. 다음 순서 문제를 전투로 변경
+        int nextSequence = current.getSequence() + 1;
+        Optional<RecommendProblem> next = recommendProblemRepository
+                .findByUserIdAndSequence(userId, nextSequence);
+        if (next.isPresent()) {
+            next.get().updateStatus(RecommendStatus.전투);
+        } else {
+
+        }
+
+
+        // 4. 다음 문제 없으면 결과, 있으면 다음 문제
+
         List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
         List<RecommendProblemResponseDto> recommendProblemResponseDto = recommendProblems.stream()
                 .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
-        return new RecommendProblemListResponseDto(recommendProblemResponseDto);
+
+        boolean isFinish = next.isEmpty();
+        if (isFinish) {
+            int totalGainedExp = recommendProblems.stream()
+                    .filter(rp -> rp.getStatus() == RecommendStatus.성공)
+                    .mapToInt(RecommendProblem::getExp)
+                    .sum();
+
+            recommendProblemRepository.deleteAllByUserId(userId);
+
+            return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, totalGainedExp);
+        } else {
+            return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, null);
+        }
+
+
+
     }
 
     @Transactional(readOnly = true)
@@ -117,6 +156,85 @@ public class ExploreService {
                 .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
 
-        return new RecommendProblemListResponseDto(problemDtos);
+        return new RecommendProblemListResponseDto(problemDtos,false,null);
     }
+
+    @Transactional
+    public RecommendProblemListResponseDto successExplore(Long userId) {
+        // 1. 현재 전투 중인 문제를 성공으로 변경
+        RecommendProblem current = recommendProblemRepository.findByUserIdAndStatus(userId, RecommendStatus.전투)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
+        current.updateStatus(RecommendStatus.성공);
+
+        // 2. 경험치 펫에 반영
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+        userPet.addExp(current.getExp());
+
+        // 3. 문제 기록 저장
+        Optional<ProblemRecord> optionalProblemRecord =
+                problemRecordRepository.findByUserIdAndProblemId(userId, current.getProblem().getId());
+
+        if (optionalProblemRecord.isPresent()) {
+            ProblemRecord problemRecord = optionalProblemRecord.get();
+            // 이미 실패였다면 성공으로 업데이트
+            if (problemRecord.getResult() == Result.실패) {
+                problemRecord.updateResult(Result.성공);
+            }
+        } else {
+            // 없으면 새로 기록
+            ProblemRecord problemRecord = ProblemRecord.builder()
+                    .user(current.getUser())
+                    .problem(current.getProblem())
+                    .result(Result.성공)
+                    .build();
+            problemRecordRepository.save(problemRecord);
+        }
+
+        // 4. SolvedProblem 중복 체크 후 저장
+        boolean alreadySolved = solvedProblemRepository.existsByUserIdAndProblemId(userId, current.getProblem().getId());
+        if (!alreadySolved) {
+            SolvedProblem solvedProblem = SolvedProblem.builder()
+                    .user(current.getUser())
+                    .problem(current.getProblem())
+                    .build();
+            solvedProblemRepository.save(solvedProblem);
+        }
+
+
+
+        // 5. 다음 문제 전투로 전환
+        int nextSequence = current.getSequence() + 1;
+        Optional<RecommendProblem> next = recommendProblemRepository
+                .findByUserIdAndSequence(userId, nextSequence);
+
+        next.ifPresent(p -> p.updateStatus(RecommendStatus.전투));
+
+
+        // 6. 다음 문제 없으면 결과, 있으면 다음 문제
+        List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
+        List<RecommendProblemResponseDto> recommendProblemResponseDto = recommendProblems.stream()
+                .map(RecommendProblemResponseDto::fromEntity)
+                .toList();
+
+        boolean isFinish = next.isEmpty();
+        if (isFinish) {
+            int totalGainedExp = recommendProblems.stream()
+                    .filter(rp -> rp.getStatus() == RecommendStatus.성공)
+                    .mapToInt(RecommendProblem::getExp)
+                    .sum();
+
+            recommendProblemRepository.deleteAllByUserId(userId);
+
+            return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, totalGainedExp);
+        } else {
+            return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, null);
+        }
+
+
+
+
+
+    }
+
 }
