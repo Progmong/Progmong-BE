@@ -5,10 +5,14 @@ import com.progmong.api.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
 public interface ProblemRecordRepository extends JpaRepository<ProblemRecord, Long> {
 
     Page<ProblemRecord> findByUser(User user, Pageable pageable);
 
     long countByUser(User user);
+
+    Optional<ProblemRecord> findByUserIdAndProblemId(Long userId, Long problemId);
+
 }

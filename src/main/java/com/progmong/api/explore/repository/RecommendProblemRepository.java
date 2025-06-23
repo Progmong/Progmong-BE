@@ -11,4 +11,6 @@ public interface RecommendProblemRepository extends JpaRepository<RecommendProbl
     Optional<RecommendProblem> findByUserIdAndStatus(Long userId, RecommendStatus recommendStatus);
     Optional<RecommendProblem> findByUserIdAndSequence(Long userId,int sequence);
     List<RecommendProblem> findAllByUserIdOrderBySequence(Long userId);
+
+    void deleteAllByUserId(Long userId);
 }

@@ -67,6 +67,7 @@ public class ExploreController {
         return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
     }
 
+
     @GetMapping("/records/all")
     public ApiResponse<ProblemRecordListQueryDto> getAllRecords(Long userId) {
         return ApiResponse.success(SuccessStatus.GET_ALL_RECORD,exploreService.getAllProblemRecords(userId)).getBody();
@@ -84,6 +85,21 @@ public class ExploreController {
     @GetMapping("/records/count")
     public ApiResponse<Long> getTotalRecordCount(Long userId) {
         return ApiResponse.success(SuccessStatus.GET_ALL_RECORD_COUNT,exploreService.getProblemRecordCount(userId)).getBody();
+    }
+
+    @PostMapping("/success")
+    @Operation(
+            summary = "탐험 문제 풀이 성공",
+            description = "현재 전투 중인 문제를 성공 처리하고 경험치를 반영합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 문제 풀이 성공 완료")
+    })
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> successExplore(
+            @RequestParam Long userId
+    ) {
+        RecommendProblemListResponseDto result = exploreService.successExplore(userId);
+        return ApiResponse.success(SuccessStatus.EXPLORE_PROBLEM_SUCCESS, result);
     }
 
 }

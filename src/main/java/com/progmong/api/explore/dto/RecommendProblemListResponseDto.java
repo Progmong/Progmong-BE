@@ -9,4 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 public class RecommendProblemListResponseDto {
     private List<RecommendProblemResponseDto> recommendProblems;
+    private boolean isFinish;
+    private Integer totalExp; // 종료 시만 값 존재, 아니면 null
 }
