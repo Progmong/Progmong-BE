@@ -20,7 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -52,12 +55,20 @@ public class ExploreService {
 
         // 3. 첫 문제는 전투, 나머지는 대기로 상태 나눠서 저장
         List<RecommendProblem> recommendProblems = new ArrayList<>();
+        List<Integer> monsterIndices = IntStream.rangeClosed(1, 10)
+                .boxed()
+                .collect(Collectors.toList());
+
+        Collections.shuffle(monsterIndices);
         for (int i = 0; i < recommend.size(); i++) {
+            Problem p = recommend.get(i);
             RecommendProblem rp = RecommendProblem.builder()
                     .user(user)
-                    .problem(recommend.get(i))
+                    .problem(p)
                     .status(i == 0 ? RecommendStatus.전투 : RecommendStatus.대기)
                     .sequence(i + 1)
+                    .exp(p.getLevel() * 10)
+                    .monsterImageIndex(monsterIndices.get(i))
                     .build();
             recommendProblems.add(rp);
         }
@@ -96,5 +107,16 @@ public class ExploreService {
                 .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
         return new RecommendProblemListResponseDto(recommendProblemResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    public RecommendProblemListResponseDto currentExplore(Long userId) {
+        List<RecommendProblem> problems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
+
+        List<RecommendProblemResponseDto> problemDtos = problems.stream()
+                .map(RecommendProblemResponseDto::fromEntity)
+                .toList();
+
+        return new RecommendProblemListResponseDto(problemDtos);
     }
 }

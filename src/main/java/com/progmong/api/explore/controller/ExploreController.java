@@ -20,7 +20,7 @@ public class ExploreController {
 
     private final ExploreService exploreService;
 
-    @PostMapping("/start")
+    @PostMapping
     @Operation(
             summary = "탐험 시작",
             description = "유저의 펫 상태를 전투로 변경하고 문제 5개를 추천합니다."
@@ -48,6 +48,21 @@ public class ExploreController {
             Long userId   // jwt 구현 시 변경
     ) {
         RecommendProblemListResponseDto recommendProblemListDto = exploreService.passExplore(userId);
+        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "현재 탐험 조회",
+            description = "현재 진행 중인 탐험의 문제들을 조회"
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 조회 성공")
+    })
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> currentExplore(
+            Long userId   // jwt 구현 시 변경
+    ) {
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.currentExplore(userId);
         return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
     }
 }

@@ -34,7 +34,10 @@ public class UserPet extends BaseTimeEntity {
     private int level;
 
     @ColumnDefault("0")
-    private int exp;
+    private int currentExp;
+
+    @ColumnDefault("500")
+    private int maxExp;
 
     @Enumerated(EnumType.STRING)
     private PetStatus status;

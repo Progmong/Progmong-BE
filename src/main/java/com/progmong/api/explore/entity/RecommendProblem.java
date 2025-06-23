@@ -33,6 +33,10 @@ public class RecommendProblem {
     @Column(name = "sequence", nullable = false)
     private int sequence;
 
+    private int exp;
+
+    private int monsterImageIndex;
+
     public void updateStatus(RecommendStatus status) {
         this.status = status;
     }
