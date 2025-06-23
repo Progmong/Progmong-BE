@@ -1,6 +1,7 @@
 package com.progmong.api.explore.controller;
 
 import com.progmong.api.explore.dto.ExploreStartRequestDto;
+import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.service.ExploreService;
 import com.progmong.common.response.ApiResponse;
@@ -64,6 +65,26 @@ public class ExploreController {
     ) {
         RecommendProblemListResponseDto recommendProblemListDto = exploreService.currentExplore(userId);
         return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+    }
+
+
+    @GetMapping("/records/all")
+    public ApiResponse<ProblemRecordListQueryDto> getAllRecords(Long userId) {
+        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD,exploreService.getAllProblemRecords(userId)).getBody();
+    }
+
+    @GetMapping("/records")
+    public ApiResponse<ProblemRecordListQueryDto> getRecentRecords(
+            Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD,exploreService.getRecentProblemRecords(userId, page, size)).getBody();
+    }
+
+    @GetMapping("/records/count")
+    public ApiResponse<Long> getTotalRecordCount(Long userId) {
+        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD_COUNT,exploreService.getProblemRecordCount(userId)).getBody();
     }
 
     @PostMapping("/success")

@@ -1,6 +1,8 @@
 package com.progmong.api.explore.service;
 
 
+import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
+import com.progmong.api.explore.dto.ProblemRecordQueryDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
 import com.progmong.api.explore.entity.*;
@@ -16,6 +18,10 @@ import com.progmong.api.user.repository.UserRepository;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -237,4 +243,54 @@ public class ExploreService {
 
     }
 
+    @Transactional(readOnly = true)
+    public ProblemRecordListQueryDto getAllProblemRecords(Long userId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        // 2. 전체 사냥 기록 조회
+        List<ProblemRecord> records = problemRecordRepository.findByUser(user, null).getContent();
+
+        // 3. DTO 변환
+        List<ProblemRecordQueryDto> recordDtos = records.stream()
+                .map(ProblemRecordQueryDto::fromEntity)
+                .toList();
+
+        // 4. totalCount 계산
+        long totalCount = problemRecordRepository.countByUser(user);
+
+        return ProblemRecordListQueryDto.of(recordDtos, totalCount);
+    }
+
+    @Transactional(readOnly = true)
+    public ProblemRecordListQueryDto getRecentProblemRecords(Long userId, int page, int size) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        // 2. 페이지네이션 설정
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        // 3. 사냥 기록 조회
+        Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
+
+        // 4. DTO 변환
+        List<ProblemRecordQueryDto> recordDtos = recordsPage.getContent().stream()
+                .map(ProblemRecordQueryDto::fromEntity)
+                .toList();
+
+        // 5. 총 개수 포함 응답 반환
+        return ProblemRecordListQueryDto.of(recordDtos, recordsPage.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public long getProblemRecordCount(Long userId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        // 2. 해당 사용자의 총 사냥 기록 수 반환
+        return problemRecordRepository.countByUser(user);
+    }
 }
