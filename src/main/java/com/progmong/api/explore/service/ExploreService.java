@@ -169,4 +169,14 @@ public class ExploreService {
         // 5. 총 개수 포함 응답 반환
         return ProblemRecordListQueryDto.of(recordDtos, recordsPage.getTotalElements());
     }
+
+    @Transactional(readOnly = true)
+    public long getProblemRecordCount(Long userId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        // 2. 해당 사용자의 총 사냥 기록 수 반환
+        return problemRecordRepository.countByUser(user);
+    }
 }
