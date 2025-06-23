@@ -13,6 +13,8 @@ public enum ErrorStatus {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "유효성 검사에 실패했습니다."),
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
+    ALREADY_REGISTERED_PET(HttpStatus.BAD_REQUEST, "이미 등록된 펫이 있습니다."),
+
 
     // 401 UNAUTHORIZED
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),

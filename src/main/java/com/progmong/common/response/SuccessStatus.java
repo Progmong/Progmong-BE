@@ -16,6 +16,7 @@ public enum SuccessStatus {
     // 커스텀 성공 메시지 예시
     USER_REGISTERED(HttpStatus.CREATED, "회원가입이 완료되었습니다."),
     PET_STATUS_UPDATED(HttpStatus.OK, "펫 상태가 변경되었습니다."),
+    PET_REGISTERED(HttpStatus.CREATED, "펫 등록이 완료되었습니다."),
     POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
 
     EXPLORE_START(HttpStatus.OK, "탐험 시작 성공");
