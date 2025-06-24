@@ -102,4 +102,17 @@ public class ExploreController {
         return ApiResponse.success(SuccessStatus.EXPLORE_PROBLEM_SUCCESS, result);
     }
 
+    @GetMapping("/check")
+    @Operation(
+            summary = "문제 풀이 여부 확인",
+            description = "해당 유저(BOJ ID)가 특정 문제를 풀었는지 확인"
+    )
+    public ResponseEntity<ApiResponse<Boolean>> verifySolved(
+            @RequestParam String bojId,
+            @RequestParam int problemId
+    ) {
+        boolean isSolved = exploreService.checkSolvedAcProblem(bojId, problemId);
+        return ApiResponse.success(SuccessStatus.EXPLORE_CHECK_PROBLEM_SUCCESS, isSolved);
+    }
+
 }
