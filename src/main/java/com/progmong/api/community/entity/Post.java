@@ -35,4 +35,6 @@ public class Post extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private PostCategory category;
+
+    private int problemNum;
 }
