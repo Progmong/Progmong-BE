@@ -35,4 +35,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<InterestTag> interestTags = new ArrayList<>();
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }
