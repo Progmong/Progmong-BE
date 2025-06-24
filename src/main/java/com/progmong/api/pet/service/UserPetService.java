@@ -13,6 +13,7 @@ import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -23,7 +24,7 @@ public class UserPetService {
     private final UserRepository userRepository;
     private final PetRepository petRepository;
 
-    //@Transactional //여러 DB 작업이 엮일 경우
+    @Transactional //여러 DB 작업이 엮일 경우
     public void registerPet(PetRegisterRequestDto request){
         if(userPetRepository.findByUserId(request.getUserId()).isPresent()){
             throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET.getMessage());
