@@ -3,6 +3,8 @@ package com.progmong.api.explore.service;
 
 import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
 import com.progmong.api.explore.dto.ProblemRecordQueryDto;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
 import com.progmong.api.explore.entity.*;
@@ -15,6 +17,7 @@ import com.progmong.api.pet.entity.UserPet;
 import com.progmong.api.pet.repository.UserPetRepository;
 import com.progmong.api.user.entity.User;
 import com.progmong.api.user.repository.UserRepository;
+import com.progmong.common.exception.BaseException;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +25,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -293,4 +301,28 @@ public class ExploreService {
         // 2. 해당 사용자의 총 사냥 기록 수 반환
         return problemRecordRepository.countByUser(user);
     }
+    public boolean checkSolvedAcProblem(String bojId, int problemId) {
+        String url = "https://solved.ac/api/v3/search/problem?query=solved_by:" + bojId + "+id:" + problemId;
+
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // 응답에서 count 값 추출
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(response.body());
+            int count = jsonNode.get("count").asInt();
+
+            return count == 1;
+        } catch (Exception e) {
+            throw new BaseException(HttpStatus.INTERNAL_SERVER_ERROR, "solved.ac API 호출 실패");
+        }
+    }
+
+
 }
