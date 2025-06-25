@@ -47,6 +47,7 @@ public class SolvedProblemSyncService {
                     .queryParam("query", "solved_by:" + bojId)
                     .queryParam("page", page)
                     .toUriString();
+            log.info("🔗 요청 URL: {}", url);
 
             try {
                 ResponseEntity<SolvedAcUserSolvedResponseDto> response = restTemplate.exchange(

@@ -18,6 +18,7 @@ public class RecommendProblemResponseDto {
     private RecommendStatus status;
     private int sequence;
     private int monsterImageIndex;
+    private String mainTagKo;
 
     public static RecommendProblemResponseDto fromEntity(RecommendProblem rp) {
         Problem p = rp.getProblem();
@@ -30,7 +31,8 @@ public class RecommendProblemResponseDto {
                 p.getSolvedUserCount(),
                 rp.getStatus(),
                 rp.getSequence(),
-                rp.getMonsterImageIndex()
+                rp.getMonsterImageIndex(),
+                p.getMainTagKo()
         );
     }
 
