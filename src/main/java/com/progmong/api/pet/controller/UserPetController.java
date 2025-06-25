@@ -2,13 +2,16 @@ package com.progmong.api.pet.controller;
 
 import com.progmong.api.pet.dto.PetRegisterRequestDto;
 import com.progmong.api.pet.service.UserPetService;
+import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
 import com.progmong.common.response.SuccessStatus;
+import com.sun.security.auth.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,8 +32,13 @@ public class UserPetController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 유저인 경우 또는 존재하지 않는 펫을 선택한 경우"),
     })
 
-    public ResponseEntity<ApiResponse<Void>> registerPet(@RequestBody PetRegisterRequestDto request) {
-        userPetService.registerPet(request);
+    public ResponseEntity<ApiResponse<Void>> registerPet(
+            @RequestBody PetRegisterRequestDto request,
+            @AuthenticationPrincipal SecurityUser user) {
+
+        Long userId = user.getId(); // Spring Security 기반
+        //Long userId = Long.parseLong(principal.); // username에 ID 저장한 경우
+        userPetService.registerPet(request, userId);
         return ApiResponse.success_only(SuccessStatus.PET_REGISTERED);
     }
 }

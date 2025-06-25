@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PetRegisterRequestDto {
-    private Long userId;
     private Long petId;
     private String nickname;
 }
