@@ -43,7 +43,7 @@ public class UserService {
 
         // 닉네임 중복 검증
         if (userRepository.findByNickname(userRegisterRequestDto.getNickname()).isPresent()) {
-            throw new BadRequestException("이미 존재하는 닉네임입니다.");
+            throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_NICKNAME.getMessage());
         }
         // User 엔티티 생성
         User user = User.builder()
