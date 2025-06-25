@@ -34,7 +34,10 @@ public class UserPet extends BaseTimeEntity {
     private int level;
 
     @ColumnDefault("0")
-    private int exp;
+    private int currentExp;
+
+    @ColumnDefault("50")
+    private int maxExp;
 
     @Enumerated(EnumType.STRING)
     private PetStatus status;
@@ -51,5 +54,19 @@ public class UserPet extends BaseTimeEntity {
 
     public void updateStatus(PetStatus status) {
         this.status = status;
+    }
+
+    public void addExp(int exp) {
+        this.currentExp += exp;
+
+        while (this.currentExp >= this.maxExp) {
+            this.currentExp -= this.maxExp;
+            this.level++;
+            this.maxExp += 200;
+
+            if (this.level == 6 || this.level == 11 || this.level == 16) {
+                this.evolutionStage++;
+            }
+        }
     }
 }

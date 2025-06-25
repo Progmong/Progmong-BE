@@ -19,6 +19,8 @@ public enum ErrorStatus {
     WRONG_EMAIL_VERIFICATION_CODE_EXCEPTION(HttpStatus.BAD_REQUEST,"이메일 인증코드가 올바르지 않습니다."),
 
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
+    ALREADY_REGISTERED_PET(HttpStatus.BAD_REQUEST, "이미 등록된 펫이 있습니다."),
+
 
     // 401 UNAUTHORIZED
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
@@ -37,6 +39,9 @@ public enum ErrorStatus {
     PROBLEM_NOT_FOUND(HttpStatus.NOT_FOUND, "문제를 찾을 수 없습니다."),
     USER_PET_NOT_FOUND(HttpStatus.NOT_FOUND,"유저의 펫을 찾을 수 없습니다."),
     USER_INTEREST_NOT_FOUND(HttpStatus.NOT_FOUND,"유저의 태그 정보가 없습니다."),
+    RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND(HttpStatus.NOT_FOUND, "전투 중인 추천 문제를 찾을 수 없습니다."),
+    NEXT_RECOMMEND_PROBLEM_NOT_FOUND(HttpStatus.NOT_FOUND, "다음 추천 문제를 찾을 수 없습니다."),
+
 
     // 409 CONFLICT
     CONFLICT(HttpStatus.CONFLICT, "충돌이 발생했습니다."),
