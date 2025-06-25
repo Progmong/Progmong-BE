@@ -62,6 +62,7 @@ public class SecurityConfig {
                         ).permitAll() // 스웨거, H2, healthCheck 허가
                         .requestMatchers("/api/v1/users/login",
                                 "/api/v1/users/register",
+                                "/api/v1/solvedac/**",
                                 "/api/v1/users/verify-email",
                                 "/api/v1/users/verification-email-code",
                                 "/api/v1/users/reset-password/request",
