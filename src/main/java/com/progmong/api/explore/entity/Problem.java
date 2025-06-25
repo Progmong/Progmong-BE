@@ -23,4 +23,5 @@ public class Problem {
     private String mainTag;
     private int solvedUserCount;
 
+        private String mainTagKo;
 }

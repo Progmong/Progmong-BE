@@ -19,4 +19,6 @@ public class Tag {
     private Long id;
 
     private String name;
+
+    private String nameKo;
 }
