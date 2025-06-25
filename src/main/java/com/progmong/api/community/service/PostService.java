@@ -42,12 +42,13 @@ public class PostService {
 
     @Transactional
     public List<PostListElementResDto> findAll(){
-        List<Post> posts = postRepository.findAll();
+        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
         List<PostListElementResDto> result = new ArrayList<>();
 
         for(Post post : posts){
             result.add(PostListElementResDto.builder()
-                    .userId(post.getId())
+                    .userId(post.getUser().getId())
+                    .nickname(post.getUser().getNickname())
                     .postId(post.getId())
                     .title(post.getTitle())
                     .likeCount(post.getLikeCount())
