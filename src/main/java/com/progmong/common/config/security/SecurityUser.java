@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SecurityUser {
     private Long id;
+    private String bojId;
     private String email;
     private String password;
     private String nickname;

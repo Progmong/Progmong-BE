@@ -81,6 +81,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .id(user.getId())
                 .email(user.getEmail())
                 .password(user.getPassword())
+                .bojId(user.getBojId())
                 .build();
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(

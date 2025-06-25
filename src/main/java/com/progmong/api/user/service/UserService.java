@@ -50,6 +50,7 @@ public class UserService {
                 .email(userRegisterRequestDto.getEmail())
                 .password(passwordEncoder.encode(userRegisterRequestDto.getPassword()))
                 .nickname(userRegisterRequestDto.getNickname())
+                .bojId(userRegisterRequestDto.getBojId())
                 .build();
 
         userRepository.save(user);
@@ -104,6 +105,6 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        return new UserInfoResponseDto(user.getId(), user.getNickname(), user.getEmail());
+        return new UserInfoResponseDto(user.getId(), user.getBojId(), user.getEmail(),user.getNickname() );
     }
 }
