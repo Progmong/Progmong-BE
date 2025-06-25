@@ -4,6 +4,7 @@ import com.progmong.api.explore.dto.ExploreStartRequestDto;
 import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.service.ExploreService;
+import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
 import com.progmong.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,10 +32,10 @@ public class ExploreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 시작 성공")
     })
     public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> startExplore(
-            Long userId,    // jwt 구현 시 변경
+            @AuthenticationPrincipal SecurityUser securityUser,
             @RequestBody ExploreStartRequestDto requestDto
     ) {
-        RecommendProblemListResponseDto recommendProblemListDto = exploreService.startExplore(userId,requestDto.getMinLevel(), requestDto.getMaxLevel());
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.startExplore(securityUser.getId(),requestDto.getMinLevel(), requestDto.getMaxLevel());
         return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
     }
 
@@ -46,10 +48,10 @@ public class ExploreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 패스 성공")
     })
     public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> passExplore(
-            Long userId   // jwt 구현 시 변경
-    ) {
-        RecommendProblemListResponseDto recommendProblemListDto = exploreService.passExplore(userId);
-        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+            @AuthenticationPrincipal SecurityUser securityUser
+            ) {
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.passExplore(securityUser.getId());
+        return ApiResponse.success(SuccessStatus.EXPLORE_PASS,recommendProblemListDto);
     }
 
     @GetMapping
@@ -61,10 +63,10 @@ public class ExploreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 조회 성공")
     })
     public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> currentExplore(
-            Long userId   // jwt 구현 시 변경
+            @AuthenticationPrincipal SecurityUser securityUser
     ) {
-        RecommendProblemListResponseDto recommendProblemListDto = exploreService.currentExplore(userId);
-        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.currentExplore(securityUser.getId());
+        return ApiResponse.success(SuccessStatus.EXPLORE_GET,recommendProblemListDto);
     }
 
 
@@ -96,9 +98,9 @@ public class ExploreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탐험 문제 풀이 성공 완료")
     })
     public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> successExplore(
-            @RequestParam Long userId
+            @AuthenticationPrincipal SecurityUser securityUser
     ) {
-        RecommendProblemListResponseDto result = exploreService.successExplore(userId);
+        RecommendProblemListResponseDto result = exploreService.successExplore(securityUser.getId());
         return ApiResponse.success(SuccessStatus.EXPLORE_PROBLEM_SUCCESS, result);
     }
 
@@ -108,10 +110,10 @@ public class ExploreController {
             description = "해당 유저(BOJ ID)가 특정 문제를 풀었는지 확인"
     )
     public ResponseEntity<ApiResponse<Boolean>> verifySolved(
-            @RequestParam String bojId,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @RequestParam int problemId
     ) {
-        boolean isSolved = exploreService.checkSolvedAcProblem(bojId, problemId);
+        boolean isSolved = exploreService.checkSolvedAcProblem(securityUser.getBojId(), problemId);
         return ApiResponse.success(SuccessStatus.EXPLORE_CHECK_PROBLEM_SUCCESS, isSolved);
     }
 

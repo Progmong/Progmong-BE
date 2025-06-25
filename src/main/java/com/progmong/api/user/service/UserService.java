@@ -1,5 +1,6 @@
 package com.progmong.api.user.service;
 
+import com.progmong.api.explore.service.SolvedProblemSyncService;
 import com.progmong.api.user.dto.*;
 import com.progmong.api.user.entity.EmailVerification;
 import com.progmong.api.user.entity.PasswordReset;
@@ -30,6 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetRepository passwordResetRepository;
     private final JwtService jwtService;
+    private final SolvedProblemSyncService solvedProblemSyncService;
 
 
     public void registerUser(UserRegisterRequestDto userRegisterRequestDto) {
@@ -54,6 +56,8 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
+        solvedProblemSyncService.syncSolvedProblems(user.getId());
+
     }
 
     // 로그인
