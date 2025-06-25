@@ -25,12 +25,12 @@ public class UserPetService {
     private final PetRepository petRepository;
 
     @Transactional //여러 DB 작업이 엮일 경우
-    public void registerPet(PetRegisterRequestDto request){
-        if(userPetRepository.findByUserId(request.getUserId()).isPresent()){
+    public void registerPet(PetRegisterRequestDto request, Long userId){
+        if(userPetRepository.findByUserId(userId).isPresent()){
             throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET.getMessage());
         }
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
         Pet pet = petRepository.findById(request.getPetId())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.PET_NOT_FOUND.getMessage()));
