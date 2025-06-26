@@ -1,6 +1,7 @@
 package com.progmong.api.pet.service;
 
 import com.progmong.api.pet.dto.PetRegisterRequestDto;
+import com.progmong.api.pet.dto.UserPetFullDto;
 import com.progmong.api.pet.entity.Pet;
 import com.progmong.api.pet.entity.PetStatus;
 import com.progmong.api.pet.entity.UserPet;
@@ -47,8 +48,11 @@ public class UserPetService {
                 .build();
 
         userPetRepository.save(userPet);
+    }
 
-
-
+    public UserPetFullDto getUserPetFullInfo(Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 펫 정보가 없습니다."));
+        return new UserPetFullDto(userPet);
     }
 }
