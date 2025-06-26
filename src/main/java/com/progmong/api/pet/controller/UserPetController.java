@@ -1,6 +1,7 @@
 package com.progmong.api.pet.controller;
 
 import com.progmong.api.pet.dto.PetRegisterRequestDto;
+import com.progmong.api.pet.dto.UserPetFullDto;
 import com.progmong.api.pet.service.UserPetService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
@@ -12,10 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Pet", description = "펫 관련 API입니다.")
 @RestController
@@ -40,5 +39,18 @@ public class UserPetController {
         //Long userId = Long.parseLong(principal.); // username에 ID 저장한 경우
         userPetService.registerPet(request, userId);
         return ApiResponse.success_only(SuccessStatus.PET_REGISTERED);
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "내 펫 정보 조회", description = "로그인한 사용자의 펫 전체 정보를 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저의 펫 정보가 없음")
+    })
+    public ResponseEntity<ApiResponse<UserPetFullDto>> getUserPetFullInfo(
+            @AuthenticationPrincipal SecurityUser user) {
+        Long userId = user.getId();
+        UserPetFullDto dto = userPetService.getUserPetFullInfo(userId);
+        return ApiResponse.success(SuccessStatus.PET_INFO_LOADED, dto);
     }
 }
