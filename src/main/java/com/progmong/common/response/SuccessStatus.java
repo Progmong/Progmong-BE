@@ -33,7 +33,8 @@ public enum SuccessStatus {
     GET_ALL_RECORD_COUNT(HttpStatus.OK, "모든 사냔 기록의 갯수 조회를 성공했습니다." ),
     EXPLORE_GET(HttpStatus.OK,"탐험 조회 성공"),
     EXPLORE_PROBLEM_SUCCESS(HttpStatus.OK, "탐험 문제 풀이 성공"),
-    EXPLORE_CHECK_PROBLEM_SUCCESS(HttpStatus.OK, "문제 풀이 여부 조회 성공");
+    EXPLORE_CHECK_PROBLEM_SUCCESS(HttpStatus.OK, "문제 풀이 여부 조회 성공"),
+    EXPLORE_PASS(HttpStatus.OK,"탐험 패스 성공");
 
     private final HttpStatus httpStatus;
     private final String message;
