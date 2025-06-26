@@ -62,7 +62,7 @@ public class UserPet extends BaseTimeEntity {
         while (this.currentExp >= this.maxExp) {
             this.currentExp -= this.maxExp;
             this.level++;
-            this.maxExp += 200;
+            this.maxExp += 50;
 
             if (this.level == 6 || this.level == 11 || this.level == 16) {
                 this.evolutionStage++;
