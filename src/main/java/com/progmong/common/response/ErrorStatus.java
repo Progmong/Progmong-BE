@@ -21,7 +21,7 @@ public enum ErrorStatus {
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
     ALREADY_REGISTERED_PET(HttpStatus.BAD_REQUEST, "이미 등록된 펫이 있습니다."),
     ALREADY_REGISTERED_PET_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 펫 닉네임입니다."),
-
+    VALIDATION_NICKNAME_EMPTY_EXCEPTION(HttpStatus.BAD_REQUEST, "닉네임은 비워둘 수 없습니다."),
 
 
     // 401 UNAUTHORIZED
