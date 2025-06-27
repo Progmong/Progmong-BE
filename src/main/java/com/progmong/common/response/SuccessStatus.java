@@ -22,6 +22,7 @@ public enum SuccessStatus {
     SEND_UPDATE_USER_PASSWORD(HttpStatus.OK, "비밀번호 변경 성공"),
     GET_USER_INFO_SUCCESS(HttpStatus.OK, "사용자 정보 조회 성공"),
     PET_INFO_LOADED(HttpStatus.OK, "사용자 펫 정보 조회 성공"),
+    PET_INFO_NOT_FOUND(HttpStatus.OK, "사용자 펫 정보가 없습니다."),
 
     PET_STATUS_UPDATED(HttpStatus.OK, "펫 상태가 변경되었습니다."),
     PET_REGISTERED(HttpStatus.CREATED, "펫 등록이 완료되었습니다."),

@@ -5,12 +5,14 @@ import com.progmong.api.user.service.EmailService;
 import com.progmong.api.user.service.UserService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.exception.BadRequestException;
+import com.progmong.common.exception.UnauthorizedException;
 import com.progmong.common.response.ApiResponse;
 import com.progmong.common.response.ErrorStatus;
 import com.progmong.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -144,5 +146,27 @@ public class UserController {
         UserInfoResponseDto userInfo = userService.getUserInfo(securityUser.getId());
         return ApiResponse.success(SuccessStatus.GET_USER_INFO_SUCCESS, userInfo);
     }
+
+    @PostMapping("/reissue")
+    @Operation(
+            summary = "Access Token 재발급 API",
+            description = "Refresh Token을 이용해 Access Token을 재발급합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Access Token 재발급 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Refresh Token이 유효하지 않습니다.")
+    })
+    public ResponseEntity<ApiResponse<UserAccessTokenResponseDto>> reissueAccessToken(
+            HttpServletRequest request) {
+
+        String refreshTokenHeader = request.getHeader("Authorization_refresh");
+        if (refreshTokenHeader == null ) {
+            throw new UnauthorizedException("Refresh Token이 없습니다.");
+        }
+
+        UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshTokenHeader);
+        return ApiResponse.success(SuccessStatus.OK, responseDto);
+    }
+
 
 }
