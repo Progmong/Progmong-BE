@@ -34,8 +34,7 @@ public class UserPetService {
         // 닉네임 중복 체크 추가
         String nickname = request.getNickname().trim();
         if (userPetRepository.existsByNickname(nickname)) {
-            throw new BadRequestException("이미 존재하는 닉네임입니다.");
-            // 또는 ErrorStatus에 새 에러 메시지 추가해서 활용
+            throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET_NICKNAME.getMessage());
         }
 
         User user = userRepository.findById(userId)
@@ -59,8 +58,34 @@ public class UserPetService {
 
     public UserPetFullDto getUserPetFullInfo(Long userId) {
         UserPet userPet = userPetRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 펫 정보가 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.PET_NOT_FOUND.getMessage()));
         return new UserPetFullDto(userPet);
     }
 
+
+    // 펫 메시지 수정 메서드 추가
+    @Transactional
+    public void updatePetMessage(Long userId, String message) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+
+        userPet.setMessage(message);
+        userPetRepository.save(userPet);
+    }
+
+    // 펫 닉네임 수정 메서드 추가
+    @Transactional
+    public void updatePetNickname(String petNickName, Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+
+        // 닉네임 중복 체크
+        String newNickname = petNickName.trim();
+        if (userPetRepository.existsByNickname(newNickname)) {
+            throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET_NICKNAME.getMessage());
+        }
+
+        userPet.setNickname(newNickname);
+        userPetRepository.save(userPet);
+    }
 }

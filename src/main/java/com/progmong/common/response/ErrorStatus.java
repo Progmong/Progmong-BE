@@ -18,9 +18,10 @@ public enum ErrorStatus {
     INVALID_PASSWORD_RESET_CODE_EXCEPTION(HttpStatus.BAD_REQUEST, "유효하지 않은 비밀번호 초기화 인증코드 입니다."),
     WRONG_EMAIL_VERIFICATION_CODE_EXCEPTION(HttpStatus.BAD_REQUEST, "이메일 인증코드가 올바르지 않습니다."),
     ALREADY_REGISTERED_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
-
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
     ALREADY_REGISTERED_PET(HttpStatus.BAD_REQUEST, "이미 등록된 펫이 있습니다."),
+    ALREADY_REGISTERED_PET_NICKNAME(HttpStatus.BAD_REQUEST, "이미 존재하는 펫 닉네임입니다."),
+
 
 
     // 401 UNAUTHORIZED

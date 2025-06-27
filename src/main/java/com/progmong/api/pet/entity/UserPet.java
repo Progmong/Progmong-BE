@@ -79,4 +79,12 @@ public class UserPet extends BaseTimeEntity {
             }
         }
     }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }
