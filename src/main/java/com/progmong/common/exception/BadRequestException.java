@@ -2,7 +2,7 @@ package com.progmong.common.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class BadRequestException extends BaseException{
+public class BadRequestException extends BaseException {
     public BadRequestException() {
         super(HttpStatus.BAD_REQUEST);
     }

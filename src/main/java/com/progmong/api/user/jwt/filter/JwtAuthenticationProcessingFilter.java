@@ -8,6 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,18 +18,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Optional;
-
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
-
-    @Value("${jwt.access.header}")
-    private String accessTokenHeader;
-
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
 
     // Swagger UI 등의 특정 URI를 필터 적용 대상에서 제외할 때 사용
     private static final String[] SWAGGER_URIS = {
@@ -35,12 +28,16 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             "/v3/api-docs",
             "/swagger-ui/index.html"
     };
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
+    @Value("${jwt.access.header}")
+    private String accessTokenHeader;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestURI = request.getRequestURI();
-        for(String uri : SWAGGER_URIS) {
-            if(requestURI.startsWith(uri)) {
+        for (String uri : SWAGGER_URIS) {
+            if (requestURI.startsWith(uri)) {
                 return true;
             }
         }
@@ -57,7 +54,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         accessToken.ifPresent(token ->
                 jwtService.extractUserId(token)
-                        .ifPresent(id->
+                        .ifPresent(id ->
                                 userRepository.findById(Long.valueOf(id))
                                         .ifPresent(this::setAuthentication)
                         )
@@ -69,7 +66,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     // 요청 헤더에서 "Bearer " 로 시작하는 토큰 부분만 잘라서 반환
     private Optional<String> extractToken(HttpServletRequest request, String headerName) {
         String bearerToken = request.getHeader(headerName);
-        if(bearerToken != null && bearerToken.startsWith("Bearer ")) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return Optional.of(bearerToken.substring(7));
         }
         return Optional.empty();

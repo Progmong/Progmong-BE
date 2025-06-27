@@ -30,14 +30,12 @@ public class HealthCheckController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "서버 상태 OK"),
     })
 
-    // ✅ [응답 설명]
     // - 데이터 없이 응답 코드 + 메시지만 반환할 경우 사용
     // - ApiResponse.success_only(성공 상태 enum)
-    public ResponseEntity<ApiResponse<Void>> healthCheck(){
+    public ResponseEntity<ApiResponse<Void>> healthCheck() {
         return ApiResponse.success_only(SuccessStatus.OK);
     }
 
-    // ✅ [응답 설명]
     // - 응답 코드 + 메시지 + 실제 데이터 모두 반환할 경우 사용
     // - ApiResponse.success(성공 상태 enum, 데이터)
     @GetMapping("/health-data")
@@ -47,11 +45,8 @@ public class HealthCheckController {
 
 
     /**
-     *
      * @param fail
-     * @return
-     * ✅ 예외 테스트: 파라미터가 true 이면 BadRequestException 던짐
-     * ✅ 정상일 경우 응답 메시지
+     * @return  예외 테스트: 파라미터가 true 이면 BadRequestException; 정상일 경우 응답 메시지
      */
     @GetMapping("/health-error")
     public ResponseEntity<ApiResponse<Void>> healthCheckData(@RequestParam(required = false) Boolean fail) {
@@ -63,7 +58,7 @@ public class HealthCheckController {
     }
 
     /**
-     *  예외 처리 예시
+     * 예외 처리 예시
      */
     @GetMapping("/health-notfound")
     public ResponseEntity<ApiResponse<Void>> notFoundTest() {

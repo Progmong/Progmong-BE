@@ -3,16 +3,18 @@ package com.progmong.api.explore.init;
 import com.progmong.api.explore.entity.Problem;
 import com.progmong.api.explore.repository.ProblemRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-
-import java.util.List;
-import java.util.Map;
 
 
 @Slf4j
@@ -20,12 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SolvedAcImportService {
 
-    private final ProblemRepository problemRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
     private static final List<String> TAG_PRIORITY = List.of(
             "geometry", "dp", "graphs", "data_structures", "greedy", "string", "implementation", "math"
     );
-
     private static final Map<String, String> TAG_KO_MAP = Map.of(
             "geometry", "기하학",
             "dp", "DP",
@@ -36,6 +35,9 @@ public class SolvedAcImportService {
             "implementation", "구현",
             "math", "수학"
     );
+    private final ProblemRepository problemRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+
     public boolean isProblemTableEmpty() {
         return problemRepository.count() == 0;
     }
@@ -51,7 +53,7 @@ public class SolvedAcImportService {
 
         int totalSaved = 0;
 
-        List<String> levelRanges = List.of("(*1..5)", "(*6..10)", "(*11..15)","(*16..20)","(*21..25)");
+        List<String> levelRanges = List.of("(*1..5)", "(*6..10)", "(*11..15)", "(*16..20)", "(*21..25)");
         for (String levelRange : levelRanges) {
             for (int page = 1; page <= 2; page++) {
                 String tagQuery = "tag:math or tag:implementation or tag:greedy or tag:string or " +
@@ -97,7 +99,7 @@ public class SolvedAcImportService {
                                         .findFirst()
                                         .orElseThrow(() -> new IllegalStateException("적절한 대표 태그 없음"));
 
-                                        String mainTagKo = TAG_KO_MAP.getOrDefault(mainTag, "기타");
+                                String mainTagKo = TAG_KO_MAP.getOrDefault(mainTag, "기타");
                                 return new Problem(
                                         (long) item.getProblemId(),
                                         item.getTitleKo(),
@@ -122,4 +124,3 @@ public class SolvedAcImportService {
         log.info("✅ 총 저장된 문제 수: {}", totalSaved);
     }
 }
-

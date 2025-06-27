@@ -13,7 +13,7 @@ public class JwtConfig {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    
+
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
         return new JwtAuthenticationProcessingFilter(jwtService, userRepository);

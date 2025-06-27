@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ApiResponse<?>> handleBaseException(BaseException e) {
         return ResponseEntity.status(e.getStatusCode())
-                .body(ApiResponse.fail(e.getStatusCode(),e.getResponseMessage()));
+                .body(ApiResponse.fail(e.getStatusCode(), e.getResponseMessage()));
     }
 
     @ExceptionHandler(RuntimeException.class)

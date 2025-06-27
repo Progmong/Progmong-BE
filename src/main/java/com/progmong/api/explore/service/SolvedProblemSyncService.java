@@ -10,19 +10,21 @@ import com.progmong.api.user.entity.User;
 import com.progmong.api.user.repository.UserRepository;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Service
@@ -58,7 +60,9 @@ public class SolvedProblemSyncService {
                 );
 
                 SolvedAcUserSolvedResponseDto body = response.getBody();
-                if (body == null || body.getItems().isEmpty()) break;
+                if (body == null || body.getItems().isEmpty()) {
+                    break;
+                }
 
                 List<Long> problemIds = body.getItems().stream()
                         .map(item -> (long) item.getProblemId())
@@ -67,12 +71,13 @@ public class SolvedProblemSyncService {
                 Map<Long, Problem> problemMap = problemRepository.findAllById(problemIds).stream()
                         .collect(Collectors.toMap(Problem::getId, Function.identity()));
 
-
                 List<SolvedProblem> solvedList = body.getItems().stream()
                         .map(item -> {
                             Long problemId = (long) item.getProblemId();
                             Problem problem = problemMap.get(problemId);
-                            if (problem == null) return null;
+                            if (problem == null) {
+                                return null;
+                            }
 
                             return SolvedProblem.builder()
                                     .user(user)

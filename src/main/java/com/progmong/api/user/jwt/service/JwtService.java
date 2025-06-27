@@ -5,15 +5,13 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.progmong.api.user.repository.UserRepository;
+import java.util.Date;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +19,11 @@ import java.util.Optional;
 @Slf4j
 public class JwtService {
 
+    private final UserRepository userRepository;
     @Value("${jwt.secretKey}")
     private String secretKey;
-
     @Value("${jwt.access.expiration}")
     private Long accessTokenExpirationPeriod;
-
-    private final UserRepository userRepository;
 
     // Access Token 생성
     public String createAccessToken(Long userId) {
