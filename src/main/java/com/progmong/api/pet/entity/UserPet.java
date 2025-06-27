@@ -82,4 +82,8 @@ public class UserPet extends BaseTimeEntity {
             }
         }
     }
+
+    public void setIsProud(boolean b) {
+        this.isProud = b;
+    }
 }

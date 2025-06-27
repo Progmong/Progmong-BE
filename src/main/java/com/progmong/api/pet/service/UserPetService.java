@@ -47,7 +47,7 @@ public class UserPetService {
                 .pet(pet)
                 .level(1)
                 .status(PetStatus.휴식)
-                .message(null)
+                .message("프로그몽! 만나서 반가워요!")
                 .isProud(false)
                 .nickname(request.getNickname())
                 .evolutionStage(1)
@@ -87,5 +87,21 @@ public class UserPetService {
 
         userPet.setNickname(newNickname);
         userPetRepository.save(userPet);
+    }
+
+    // 펫 공개 여부 변경 메서드 추가
+    @Transactional
+    public void togglePetVisibility(Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+
+        userPet.setIsProud(!userPet.isProud()); // 현재 상태를 반전시킴
+        userPetRepository.save(userPet);
+    }
+
+    public boolean isPetProud(Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+        return userPet.isProud();
     }
 }

@@ -37,7 +37,8 @@ public enum SuccessStatus {
     EXPLORE_CHECK_PROBLEM_SUCCESS(HttpStatus.OK, "문제 풀이 여부 조회 성공"),
     EXPLORE_PASS(HttpStatus.OK, "탐험 패스 성공"),
     PET_NICKNAME_UPDATED(HttpStatus.OK, "펫 닉네임이 변경되었습니다."),
-    PET_MESSAGE_UPDATED(HttpStatus.OK, "펫 메시지가 변경되었습니다.");
+    PET_MESSAGE_UPDATED(HttpStatus.OK, "펫 메시지가 변경되었습니다."),
+    PET_PROUD_STATUS_LOADED(HttpStatus.OK, "펫 자랑 상태 조회 성공"),;
 
     private final HttpStatus httpStatus;
     private final String message;

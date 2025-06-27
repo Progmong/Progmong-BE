@@ -87,4 +87,30 @@ public class UserPetController {
         return ApiResponse.success_only(SuccessStatus.PET_MESSAGE_UPDATED);
     }
 
+    @GetMapping("/proud")
+    @Operation(summary = "내 펫 공개 여부 조회", description = "로그인한 사용자의 펫 공개여부를 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "펫 공개 여부 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저의 펫 정보가 없음")
+    })
+    public ResponseEntity<ApiResponse<Boolean>> isPetProud(
+            @AuthenticationPrincipal SecurityUser user) {
+
+        Long userId = user.getId();
+        boolean isProud = userPetService.isPetProud(userId);
+        return ApiResponse.success(SuccessStatus.PET_PROUD_STATUS_LOADED, isProud);
+    }
+
+    @PatchMapping("/proud")
+    @Operation(summary = "내 펫 공개 여부 변경", description = "로그인한 사용자의 펫 공개 여부를 변경합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "펫 공개 여부 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저의 펫 정보가 없음")
+    })
+    public ResponseEntity<ApiResponse<Void>> togglePetVisibility(
+            @AuthenticationPrincipal SecurityUser user) {
+        Long userId = user.getId();
+        userPetService.togglePetVisibility(userId);
+        return ApiResponse.success_only(SuccessStatus.PET_STATUS_UPDATED);
+    }
 }
