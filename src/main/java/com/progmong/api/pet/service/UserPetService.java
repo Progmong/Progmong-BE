@@ -31,6 +31,13 @@ public class UserPetService {
             throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET.getMessage());
         }
 
+        // 닉네임 중복 체크 추가
+        String nickname = request.getNickname().trim();
+        if (userPetRepository.existsByNickname(nickname)) {
+            throw new BadRequestException("이미 존재하는 닉네임입니다.");
+            // 또는 ErrorStatus에 새 에러 메시지 추가해서 활용
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
         Pet pet = petRepository.findById(request.getPetId())
@@ -55,4 +62,5 @@ public class UserPetService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저의 펫 정보가 없습니다."));
         return new UserPetFullDto(userPet);
     }
+
 }
