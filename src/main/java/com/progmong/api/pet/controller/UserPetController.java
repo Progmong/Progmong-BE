@@ -16,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Tag(name = "Pet", description = "펫 관련 API입니다.")
 @RestController
 @RequestMapping("/api/v1/pet")
@@ -27,7 +29,7 @@ public class UserPetController {
     @Operation(summary = "펫 등록", description = "사용자가 펫의 종류와 닉네임을 작성하여 등록합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "펫 등록 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 등록된 펫이 있는 경우"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 등록된 펫이 있는 경우, 닉네임이 중복된 경우"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 유저인 경우 또는 존재하지 않는 펫을 선택한 경우"),
     })
 
@@ -53,4 +55,6 @@ public class UserPetController {
         UserPetFullDto dto = userPetService.getUserPetFullInfo(userId);
         return ApiResponse.success(SuccessStatus.PET_INFO_LOADED, dto);
     }
+
+
 }
