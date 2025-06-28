@@ -16,19 +16,27 @@ public class SwaggerConfig {
     @Value("${jwt.access.header}")
     private String accessTokenHeader;
 
+    @Value("${jwt.refresh.header}")
+    private String refreshTokenHeader;
+
     @Bean
     public OpenAPI openAPI() {
         SecurityScheme accessTokenScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("JWT")
+                .type(SecurityScheme.Type.APIKEY)   // 여기 중요!
                 .in(SecurityScheme.In.HEADER)
-                .name(accessTokenHeader);
+                .name(accessTokenHeader); // 일반적으로 "Authorization"
 
         SecurityRequirement accessTokenRequirement = new SecurityRequirement()
                 .addList(accessTokenHeader);
 
-        // 서버(서버 URL) 정보
+        SecurityScheme refreshTokenScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name(refreshTokenHeader); // 예: "Refresh"
+
+        SecurityRequirement refreshTokenRequirement = new SecurityRequirement()
+                .addList(refreshTokenHeader);
+
         Server server = new Server();
         server.setUrl("http://localhost:8100");
 
@@ -38,8 +46,10 @@ public class SwaggerConfig {
                         .description("프로그몽 REST API Document")
                         .version("1.0.0"))
                 .components(new Components()
-                        .addSecuritySchemes(accessTokenHeader, accessTokenScheme))
+                        .addSecuritySchemes(accessTokenHeader, accessTokenScheme)
+                        .addSecuritySchemes(refreshTokenHeader, refreshTokenScheme))
                 .addServersItem(server)
-                .addSecurityItem(accessTokenRequirement);
+                .addSecurityItem(accessTokenRequirement)
+                .addSecurityItem(refreshTokenRequirement);
     }
 }

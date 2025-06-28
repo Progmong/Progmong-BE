@@ -46,12 +46,14 @@ public class SecurityConfig {
                     ));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
+
                     config.setAllowedHeaders(
                             Arrays.asList("Authorization", "Authorization-Refresh", "Content-Type", "X-Requested-With",
                                     "Accept", "Origin"));
+
                     config.setMaxAge(3600L);
                     config.addExposedHeader("Authorization");
-                    config.addExposedHeader("Authorization-Refresh");
+                    config.addExposedHeader("Authorization_refresh");
                     return config;
                 }))
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))

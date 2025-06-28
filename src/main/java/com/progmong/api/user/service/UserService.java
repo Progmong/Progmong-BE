@@ -78,8 +78,11 @@ public class UserService {
 
         // JWT 토큰 생성 (Access)
         String accessToken = jwtService.createAccessToken(user.getId());
+        // JWT 토큰 생성 (Refresh)
+        String refreshToken = jwtService.createRefreshToken(user.getId());
 
-        return new UserLoginResponseDto(accessToken);
+
+        return new UserLoginResponseDto(accessToken, refreshToken);
     }
 
     // 비밀번호 초기화
@@ -115,4 +118,23 @@ public class UserService {
 
         return new UserInfoResponseDto(user.getId(), user.getBojId(), user.getEmail(), user.getNickname());
     }
+
+    // Access Token 재발급
+
+    public UserAccessTokenResponseDto reissueAccessTokenByRefreshToken(String refreshToken) {
+        if (!jwtService.isRefreshTokenValid(refreshToken)) {
+            throw new UnauthorizedException("Refresh Token이 유효하지 않습니다.");
+        }
+
+        String userId = jwtService.extractUserIdByRefresh(refreshToken)
+                .orElseThrow(() -> new UnauthorizedException("토큰에서 사용자 정보를 추출할 수 없습니다."));
+
+        User user = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new NotFoundException("해당 사용자를 찾을 수 없습니다."));
+
+        String newAccessToken = jwtService.createAccessToken(user.getId());
+
+        return new UserAccessTokenResponseDto(newAccessToken);
+    }
+
 }

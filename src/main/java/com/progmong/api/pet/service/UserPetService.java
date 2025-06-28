@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -58,9 +60,11 @@ public class UserPetService {
     }
 
     public UserPetFullDto getUserPetFullInfo(Long userId) {
-        UserPet userPet = userPetRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 펫 정보가 없습니다."));
-        return new UserPetFullDto(userPet);
+        Optional<UserPet> userPet = userPetRepository.findByUserId(userId);
+                if (userPet.isEmpty()) {
+                    return new UserPetFullDto(); // 빈 DTO 반환
+                }
+        return new UserPetFullDto(userPet.get());
     }
 
 }
