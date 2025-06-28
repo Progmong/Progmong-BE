@@ -189,21 +189,5 @@ public class UserController {
         return ApiResponse.success_only(SuccessStatus.UPDATE_USER_NICKNAME_SUCCESS);
     }
 
-    // 회원 탈퇴 API
-    @Operation(
-            summary = "회원 탈퇴 API",
-            description = "토큰을 통해 인증된 사용자를 삭제합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없습니다.")
-    })
-    @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @AuthenticationPrincipal SecurityUser securityUser) {
-        userService.deleteUser(securityUser.getId());
-        return ApiResponse.success_only(SuccessStatus.OK);
-    }
-
 
 }
