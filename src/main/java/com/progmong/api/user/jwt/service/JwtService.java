@@ -33,8 +33,6 @@ public class JwtService {
     @Value("${jwt.refresh.expiration}")
     private Long refreshTokenExpirationPeriod;
 
-    private final UserRepository userRepository;
-
     // Access Token 생성
     public String createAccessToken(Long userId) {
         Date now = new Date();
