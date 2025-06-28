@@ -24,4 +24,19 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
             @Param("maxLevel") int maxLevel,
             @Param("userId") Long userId
     );
+
+    @Query(value = """
+    SELECT * FROM problem p
+    WHERE p.level BETWEEN :minLevel AND :maxLevel
+      AND p.problem_id NOT IN (
+          SELECT sp.problem_id FROM solved_problem sp WHERE sp.user_id = :userId
+      )
+    ORDER BY RAND()
+    LIMIT 5
+    """, nativeQuery = true)
+    List<Problem> findRandomUnsolvedProblemsByLevelOnly(
+            @Param("minLevel") int minLevel,
+            @Param("maxLevel") int maxLevel,
+            @Param("userId") Long userId
+    );
 }
