@@ -10,6 +10,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,14 +22,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+
 
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
+
 
     @Value("${jwt.access.header}")
     private String accessTokenHeader;
@@ -37,11 +39,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper; // ObjectMapper 주입 필요
 
+    // Swagger UI 등의 특정 URI를 필터 적용 대상에서 제외할 때 사용
     private static final String[] SWAGGER_URIS = {
             "/swagger-ui",
             "/v3/api-docs",
             "/swagger-ui/index.html"
     };
+   
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {

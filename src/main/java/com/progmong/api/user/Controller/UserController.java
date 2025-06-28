@@ -1,6 +1,13 @@
 package com.progmong.api.user.Controller;
 
-import com.progmong.api.user.dto.*;
+import com.progmong.api.user.dto.EmailVerificationCodeRequestDto;
+import com.progmong.api.user.dto.EmailVerificationRequestDto;
+import com.progmong.api.user.dto.PasswordResetConfirmDto;
+import com.progmong.api.user.dto.PasswordResetRequestDto;
+import com.progmong.api.user.dto.UserInfoResponseDto;
+import com.progmong.api.user.dto.UserLoginRequestDto;
+import com.progmong.api.user.dto.UserLoginResponseDto;
+import com.progmong.api.user.dto.UserRegisterRequestDto;
 import com.progmong.api.user.service.EmailService;
 import com.progmong.api.user.service.UserService;
 import com.progmong.common.config.security.SecurityUser;
@@ -13,14 +20,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.apache.commons.validator.routines.EmailValidator;
-
-
-import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -43,19 +52,21 @@ public class UserController {
         userService.registerUser(userRegisterRequestDto);
         return ApiResponse.success_only(SuccessStatus.USER_REGISTERED);
     }
+
     @Operation(
             summary = "이메일 인증코드 발송 API",
             description = "이메일 인증 코드를 발송합니다.<br>"
-            +"<p>"
-            +"호출 필드 정보) <br>"
-            +"email : 사용자 이메일"
+                    + "<p>"
+                    + "호출 필드 정보) <br>"
+                    + "email : 사용자 이메일"
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이메일 인증코드 발송 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "올바른 이메일 형식이 아닙니다."),
     })
     @PostMapping("/verify-email")
-    public ResponseEntity<ApiResponse<Void>> getEmailVerification(@RequestBody EmailVerificationRequestDto emailVerificationRequestDto) {
+    public ResponseEntity<ApiResponse<Void>> getEmailVerification(
+            @RequestBody EmailVerificationRequestDto emailVerificationRequestDto) {
         LocalDateTime requestedAt = LocalDateTime.now();
         String email = emailVerificationRequestDto.getEmail();
 
@@ -67,6 +78,7 @@ public class UserController {
         emailService.sendVerificationEmail(email, requestedAt);
         return ApiResponse.success_only(SuccessStatus.SEND_EMAIL_VERIFICATION_CODE_SUCCESS);
     }
+
     @Operation(
             summary = "이메일 코드 인증 API",
             description = "발송된 이메일 인증 코드를 검증합니다.<br>"
@@ -79,7 +91,8 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "이메일 인증코드가 올바르지 않습니다."),
     })
     @PostMapping("/verification-email-code")
-    public ResponseEntity<ApiResponse<Void>> verificationByCode(@RequestBody EmailVerificationCodeRequestDto emailVerificationCodeRequestDto) {
+    public ResponseEntity<ApiResponse<Void>> verificationByCode(
+            @RequestBody EmailVerificationCodeRequestDto emailVerificationCodeRequestDto) {
         LocalDateTime requestedAt = LocalDateTime.now();
         emailService.verifyEmail(emailVerificationCodeRequestDto.getCode(), requestedAt);
         return ApiResponse.success_only(SuccessStatus.SEND_EMAIL_VERIFICATION_SUCCESS);
@@ -95,10 +108,12 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
     })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserLoginResponseDto>> login(@RequestBody UserLoginRequestDto userLoginRequestDto) {
+    public ResponseEntity<ApiResponse<UserLoginResponseDto>> login(
+            @RequestBody UserLoginRequestDto userLoginRequestDto) {
         UserLoginResponseDto responseDto = userService.login(userLoginRequestDto);
         return ApiResponse.success(SuccessStatus.USER_LOGGED_IN, responseDto);
     }
+
     @Operation(
             summary = "비밀번호 초기화 요청 API",
             description = "이메일로 비밀번호 초기화 코드를 보냅니다."
@@ -108,10 +123,12 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
     })
     @PostMapping("/reset-password/request")
-    public ResponseEntity<ApiResponse<Void>> requestPasswordReset(@RequestBody PasswordResetRequestDto passwordResetRequestDto) {
+    public ResponseEntity<ApiResponse<Void>> requestPasswordReset(
+            @RequestBody PasswordResetRequestDto passwordResetRequestDto) {
         emailService.sendPasswordResetEmail(passwordResetRequestDto);
         return ApiResponse.success_only(SuccessStatus.SEND_PASSWORD_RESET_CODE_SUCCESS);
     }
+
     @Operation(
             summary = "비밀번호 초기화 API",
             description = "이메일에서 받은 코드를 이용해 비밀번호를 변경합니다. <br>"
@@ -126,7 +143,8 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "비밀번호 초기화 인증코드가 만료되었습니다, 재인증 해주세요."),
     })
     @PostMapping("/reset-password/confirm")
-    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody PasswordResetConfirmDto passwordResetConfirmDto) {
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @RequestBody PasswordResetConfirmDto passwordResetConfirmDto) {
 
         userService.resetPassword(passwordResetConfirmDto);
         return ApiResponse.success_only(SuccessStatus.SEND_UPDATE_USER_PASSWORD);
@@ -141,11 +159,13 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없습니다.")
     })
     @GetMapping("/user-info")
-    public ResponseEntity<ApiResponse<UserInfoResponseDto>> getUserInfo(@AuthenticationPrincipal SecurityUser securityUser) {
+    public ResponseEntity<ApiResponse<UserInfoResponseDto>> getUserInfo(
+            @AuthenticationPrincipal SecurityUser securityUser) {
 
         UserInfoResponseDto userInfo = userService.getUserInfo(securityUser.getId());
         return ApiResponse.success(SuccessStatus.GET_USER_INFO_SUCCESS, userInfo);
     }
+
 
     @PostMapping("/reissue")
     @Operation(
@@ -168,5 +188,5 @@ public class UserController {
         return ApiResponse.success(SuccessStatus.OK, responseDto);
     }
 
-
 }
+

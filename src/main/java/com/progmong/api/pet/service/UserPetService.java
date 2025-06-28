@@ -28,9 +28,16 @@ public class UserPetService {
     private final PetRepository petRepository;
 
     @Transactional //여러 DB 작업이 엮일 경우
-    public void registerPet(PetRegisterRequestDto request, Long userId){
-        if(userPetRepository.findByUserId(userId).isPresent()){
+    public void registerPet(PetRegisterRequestDto request, Long userId) {
+        if (userPetRepository.findByUserId(userId).isPresent()) {
             throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET.getMessage());
+        }
+
+        // 닉네임 중복 체크 추가
+        String nickname = request.getNickname().trim();
+        if (userPetRepository.existsByNickname(nickname)) {
+            throw new BadRequestException("이미 존재하는 닉네임입니다.");
+            // 또는 ErrorStatus에 새 에러 메시지 추가해서 활용
         }
 
         User user = userRepository.findById(userId)
@@ -59,4 +66,5 @@ public class UserPetService {
                 }
         return new UserPetFullDto(userPet.get());
     }
+
 }

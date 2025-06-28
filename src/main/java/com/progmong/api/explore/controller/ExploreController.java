@@ -13,7 +13,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/explore")
@@ -35,8 +40,9 @@ public class ExploreController {
             @AuthenticationPrincipal SecurityUser securityUser,
             @RequestBody ExploreStartRequestDto requestDto
     ) {
-        RecommendProblemListResponseDto recommendProblemListDto = exploreService.startExplore(securityUser.getId(),requestDto.getMinLevel(), requestDto.getMaxLevel());
-        return ApiResponse.success(SuccessStatus.EXPLORE_START,recommendProblemListDto);
+        RecommendProblemListResponseDto recommendProblemListDto = exploreService.startExplore(securityUser.getId(),
+                requestDto.getMinLevel(), requestDto.getMaxLevel());
+        return ApiResponse.success(SuccessStatus.EXPLORE_START, recommendProblemListDto);
     }
 
     @PostMapping("/pass")
@@ -49,9 +55,9 @@ public class ExploreController {
     })
     public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> passExplore(
             @AuthenticationPrincipal SecurityUser securityUser
-            ) {
+    ) {
         RecommendProblemListResponseDto recommendProblemListDto = exploreService.passExplore(securityUser.getId());
-        return ApiResponse.success(SuccessStatus.EXPLORE_PASS,recommendProblemListDto);
+        return ApiResponse.success(SuccessStatus.EXPLORE_PASS, recommendProblemListDto);
     }
 
     @GetMapping
@@ -66,13 +72,13 @@ public class ExploreController {
             @AuthenticationPrincipal SecurityUser securityUser
     ) {
         RecommendProblemListResponseDto recommendProblemListDto = exploreService.currentExplore(securityUser.getId());
-        return ApiResponse.success(SuccessStatus.EXPLORE_GET,recommendProblemListDto);
+        return ApiResponse.success(SuccessStatus.EXPLORE_GET, recommendProblemListDto);
     }
 
 
     @GetMapping("/records/all")
     public ApiResponse<ProblemRecordListQueryDto> getAllRecords(Long userId) {
-        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD,exploreService.getAllProblemRecords(userId)).getBody();
+        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD, exploreService.getAllProblemRecords(userId)).getBody();
     }
 
     @GetMapping("/records")
@@ -81,12 +87,14 @@ public class ExploreController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD,exploreService.getRecentProblemRecords(userId, page, size)).getBody();
+        return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD,
+                exploreService.getRecentProblemRecords(userId, page, size)).getBody();
     }
 
     @GetMapping("/records/count")
     public ApiResponse<Long> getTotalRecordCount(Long userId) {
-        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD_COUNT,exploreService.getProblemRecordCount(userId)).getBody();
+        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD_COUNT, exploreService.getProblemRecordCount(userId))
+                .getBody();
     }
 
     @PostMapping("/success")

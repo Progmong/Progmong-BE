@@ -6,15 +6,17 @@ import com.progmong.api.pet.service.UserPetService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
 import com.progmong.common.response.SuccessStatus;
-import com.sun.security.auth.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Pet", description = "펫 관련 API입니다.")
 @RestController
@@ -27,7 +29,7 @@ public class UserPetController {
     @Operation(summary = "펫 등록", description = "사용자가 펫의 종류와 닉네임을 작성하여 등록합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "펫 등록 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 등록된 펫이 있는 경우"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 등록된 펫이 있는 경우, 닉네임이 중복된 경우"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 유저인 경우 또는 존재하지 않는 펫을 선택한 경우"),
     })
 
@@ -56,4 +58,6 @@ public class UserPetController {
         }
         return ApiResponse.success(SuccessStatus.PET_INFO_LOADED, dto);
     }
+
+
 }

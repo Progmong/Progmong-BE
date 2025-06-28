@@ -1,9 +1,8 @@
 package com.progmong.api.tag.dto;
 
 
-import lombok.Getter;
-
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public class InterestTagUpdateRequestDto {
