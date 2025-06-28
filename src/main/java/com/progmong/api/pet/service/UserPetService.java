@@ -49,6 +49,7 @@ public class UserPetService {
                 .user(user)
                 .pet(pet)
                 .level(1)
+                .maxExp(50)
                 .status(PetStatus.휴식)
                 .message(null)
                 .isProud(false)
