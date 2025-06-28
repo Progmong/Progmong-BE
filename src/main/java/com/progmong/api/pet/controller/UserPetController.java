@@ -53,9 +53,7 @@ public class UserPetController {
             @AuthenticationPrincipal SecurityUser user) {
         Long userId = user.getId();
         UserPetFullDto dto = userPetService.getUserPetFullInfo(userId);
-        if (dto.getUserPetId() == null) {
-            return ApiResponse.success(SuccessStatus.PET_INFO_NOT_FOUND,dto);
-        }
+
         return ApiResponse.success(SuccessStatus.PET_INFO_LOADED, dto);
     }
 
