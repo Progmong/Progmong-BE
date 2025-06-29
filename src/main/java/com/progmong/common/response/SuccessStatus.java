@@ -26,17 +26,25 @@ public enum SuccessStatus {
 
     PET_STATUS_UPDATED(HttpStatus.OK, "펫 상태가 변경되었습니다."),
     PET_REGISTERED(HttpStatus.CREATED, "펫 등록이 완료되었습니다."),
-    POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
     INTEREST_TAG_FOUND(HttpStatus.OK, "관심 태그 조회 성공"),
     INTEREST_TAG_UPDATED(HttpStatus.OK, "관심 태그가 성공적으로 수정되었습니다."),
     EXPLORE_START(HttpStatus.OK, "탐험 시작 성공"),
     GET_ALL_RECORD(HttpStatus.OK, "모든 사냥 기록 조회에 성공했습니다."),
     GET_PAGED_RECORD(HttpStatus.OK, "페이지네이션이 적용된 사냥 기록 조회에 성공했습니다."),
+
+
+    // 커뮤니티
+    POST_WRITE_SUCCESS(HttpStatus.OK, "게시글 작성이 완료되었습니다."),
+    POST_FIND_SUCCESS(HttpStatus.OK, "게시글 조회 성공"),
+    POST_ALL_SUCCESS(HttpStatus.OK, "게시글 리스트 불러오기 성공"),
+    POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
+
     GET_ALL_RECORD_COUNT(HttpStatus.OK, "모든 사냔 기록의 갯수 조회를 성공했습니다."),
     EXPLORE_GET(HttpStatus.OK, "탐험 조회 성공"),
     EXPLORE_PROBLEM_SUCCESS(HttpStatus.OK, "탐험 문제 풀이 성공"),
     EXPLORE_CHECK_PROBLEM_SUCCESS(HttpStatus.OK, "문제 풀이 여부 조회 성공"),
     EXPLORE_PASS(HttpStatus.OK, "탐험 패스 성공");
+
 
     private final HttpStatus httpStatus;
     private final String message;
