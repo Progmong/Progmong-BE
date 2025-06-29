@@ -1,8 +1,6 @@
 package com.progmong.api.community.controller;
 
-import com.progmong.api.community.dto.PostDetailResDto;
-import com.progmong.api.community.dto.PostListElementResDto;
-import com.progmong.api.community.dto.PostWriteDto;
+import com.progmong.api.community.dto.*;
 import com.progmong.api.community.service.PostService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
@@ -11,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/community")
 @RestController
+@Slf4j
 public class CommunityController {
     private final PostService postService;
      @GetMapping("/post/all")
@@ -38,11 +38,12 @@ public class CommunityController {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 등록 성공"),
     })
-    public ResponseEntity<ApiResponse<PostWriteDto>> postWrite(@RequestBody PostWriteDto postWriteDto,
+    public ResponseEntity<ApiResponse<PostDetailResDto>> postWrite(@RequestBody PostWriteDto postWriteDto,
                                                        @AuthenticationPrincipal SecurityUser securityUser)
     {
-        postService.postWrite(securityUser.getId(),postWriteDto);
-        return ApiResponse.success(SuccessStatus.POST_WRITE_SUCCESS, postWriteDto);
+        PostDetailResDto postDetailResDto = postService.postWrite(securityUser.getId(),postWriteDto);
+        log.error(postDetailResDto.toString());
+        return ApiResponse.success(SuccessStatus.POST_WRITE_SUCCESS, postDetailResDto);
     }
 
     @GetMapping("/post/detail/{postId}")
@@ -56,15 +57,28 @@ public class CommunityController {
         return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
     }
 
-    @GetMapping("/post/modify/{postId}")
+    @GetMapping("/post/writer/{postId}")
+    @Operation(summary = "작성자 인지 확인", description = "게시글id로 조회하시길 바랍니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 작성자 찾기 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 작성자 조회에 실패했습니다"),
+    })
+    public ResponseEntity<ApiResponse<Boolean>> isWriter(@PathVariable Long postId,
+                                                         @AuthenticationPrincipal SecurityUser securityUser)
+    {
+        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.isWriter(postId, securityUser.getId()));
+    }
+
+    @PostMapping("/post/modify")
     @Operation(summary = "게시글 수정", description = "게시글id로 수정하시길 바랍니다")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 수정이 실패했습니다"),
     })
-    public ResponseEntity<ApiResponse<PostDetailResDto>> modify(@PathVariable Long postId)
+    public ResponseEntity<ApiResponse<Boolean>> modify(@RequestBody PostModifyDto postModifyDto, @AuthenticationPrincipal SecurityUser securityUser)
     {
-        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+        return ApiResponse.success(SuccessStatus.POST_MODIFY_SUCCESS,postService
+                .modify(securityUser.getId(),postModifyDto));
     }
 
     @GetMapping("/post/delete/{postId}")
@@ -73,9 +87,9 @@ public class CommunityController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 삭제가 실패했습니다"),
     })
-    public ResponseEntity<ApiResponse<PostDetailResDto>> delete(@PathVariable Long postId)
+    public ResponseEntity<ApiResponse<Boolean>> delete(@PathVariable Long postId, @AuthenticationPrincipal SecurityUser securityUser)
     {
-        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+        return ApiResponse.success(SuccessStatus.POST_DELETED,postService.delete(postId, securityUser.getId()));
     }
 
     @GetMapping("/showcase/all")

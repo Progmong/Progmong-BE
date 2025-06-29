@@ -10,8 +10,11 @@ import java.time.LocalDateTime;
 @Builder
 @ToString
 public class PostDetailResDto {
+    private Long postId;
+    private Long userId;
     private String title;
+    private String nickname;
     private String content;
-    private LocalDateTime createAt;
     private int likeCount;
+    private LocalDateTime createdAt;
 }

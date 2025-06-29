@@ -2,11 +2,13 @@ package com.progmong.api.community.service;
 
 import com.progmong.api.community.dto.PostDetailResDto;
 import com.progmong.api.community.dto.PostListElementResDto;
+import com.progmong.api.community.dto.PostModifyDto;
 import com.progmong.api.community.dto.PostWriteDto;
 import com.progmong.api.community.entity.Post;
 import com.progmong.api.community.repository.PostRepository;
 import com.progmong.api.user.entity.User;
 import com.progmong.api.user.repository.UserRepository;
+import com.progmong.common.exception.BadRequestException;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
 import jakarta.transaction.Transactional;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +28,7 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional
-    public void postWrite(Long userId, PostWriteDto postWriteDto){
+    public PostDetailResDto postWrite(Long userId, PostWriteDto postWriteDto){
         // 저장된 Token을 기준으로
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
@@ -38,6 +41,18 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
+
+        log.error(post.getContent());
+
+
+        return PostDetailResDto.builder()
+                .postId(post.getId())
+                .userId(post.getUser().getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .nickname(post.getUser().getNickname())
+                .likeCount(post.getLikeCount())
+                .createdAt(post.getCreatedAt()).build();
     }
 
     @Transactional
@@ -66,13 +81,60 @@ public class PostService {
                 .orElseThrow(()-> new NotFoundException(ErrorStatus.POST_NOT_FOUND.getMessage()));
 
         PostDetailResDto result = PostDetailResDto.builder()
+                .postId(post.getId())
+                .userId(post.getUser().getId())
+                .nickname(post.getUser().getNickname())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .createAt(post.getCreatedAt())
                 .likeCount(post.getLikeCount())
+                .createdAt(post.getCreatedAt())
                 .build();
-
-        log.error(result.toString());
         return result;
     }
+
+    @Transactional
+    public Boolean isWriter(Long postId, Long userId){
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.POST_NOT_FOUND.getMessage()));
+
+        return post.getUser().getId().equals(userId);
+
+    }
+
+    @Transactional
+    public Boolean modify(Long userId , PostModifyDto postModifyDto){
+
+            // 저장된 Token을 기준으로
+       Post post = postRepository.findById(postModifyDto.getPostId())
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.POST_NOT_FOUND.getMessage()));
+
+       if(!Objects.equals(userId,post.getUser().getId())){
+           log.error("작성자가 아님!");
+           throw new BadRequestException(ErrorStatus.BAD_REQUEST.getMessage());
+        }
+
+       log.error("수정 시작");
+        post.setTitle(postModifyDto.getTitle());
+        post.setContent(postModifyDto.getContent());
+        return true;
+
+    }
+
+    @Transactional
+    public Boolean delete(Long userId , Long postId){
+
+            // 저장된 Token을 기준으로
+       Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.POST_NOT_FOUND.getMessage()));
+
+       if(!Objects.equals(userId,post.getUser().getId())){
+           log.error("작성자가 아님!");
+           throw new BadRequestException(ErrorStatus.BAD_REQUEST.getMessage());
+        }
+
+       postRepository.delete(post);
+       return true;
+    }
+
+
 }

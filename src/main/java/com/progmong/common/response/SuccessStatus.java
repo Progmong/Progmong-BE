@@ -37,6 +37,7 @@ public enum SuccessStatus {
     POST_WRITE_SUCCESS(HttpStatus.OK, "게시글 작성이 완료되었습니다."),
     POST_FIND_SUCCESS(HttpStatus.OK, "게시글 조회 성공"),
     POST_ALL_SUCCESS(HttpStatus.OK, "게시글 리스트 불러오기 성공"),
+    POST_MODIFY_SUCCESS(HttpStatus.OK, "게시글 수정 성공"),
     POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
 
     GET_ALL_RECORD_COUNT(HttpStatus.OK, "모든 사냔 기록의 갯수 조회를 성공했습니다."),
