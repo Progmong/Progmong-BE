@@ -1,6 +1,14 @@
 package com.progmong.api.user.Controller;
 
-import com.progmong.api.user.dto.*;
+import com.progmong.api.user.dto.EmailVerificationCodeRequestDto;
+import com.progmong.api.user.dto.EmailVerificationRequestDto;
+import com.progmong.api.user.dto.PasswordResetConfirmDto;
+import com.progmong.api.user.dto.PasswordResetRequestDto;
+import com.progmong.api.user.dto.UserAccessTokenResponseDto;
+import com.progmong.api.user.dto.UserInfoResponseDto;
+import com.progmong.api.user.dto.UserLoginRequestDto;
+import com.progmong.api.user.dto.UserLoginResponseDto;
+import com.progmong.api.user.dto.UserRegisterRequestDto;
 import com.progmong.api.user.service.EmailService;
 import com.progmong.api.user.service.UserService;
 import com.progmong.common.config.security.SecurityUser;
@@ -18,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -198,7 +207,7 @@ public class UserController {
             HttpServletRequest request) {
 
         String refreshTokenHeader = request.getHeader("Authorization_refresh");
-        if (refreshTokenHeader == null ) {
+        if (refreshTokenHeader == null) {
             throw new UnauthorizedException("Refresh Token이 없습니다.");
         }
 
