@@ -1,6 +1,7 @@
 package com.progmong.api.pet.service;
 
 import com.progmong.api.pet.dto.PetRegisterRequestDto;
+import com.progmong.api.pet.dto.UserPetFullDto;
 import com.progmong.api.pet.entity.Pet;
 import com.progmong.api.pet.entity.PetStatus;
 import com.progmong.api.pet.entity.UserPet;
@@ -25,12 +26,19 @@ public class UserPetService {
     private final PetRepository petRepository;
 
     @Transactional //여러 DB 작업이 엮일 경우
-    public void registerPet(PetRegisterRequestDto request){
-        if(userPetRepository.findByUserId(request.getUserId()).isPresent()){
+    public void registerPet(PetRegisterRequestDto request, Long userId) {
+        if (userPetRepository.findByUserId(userId).isPresent()) {
             throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET.getMessage());
         }
 
-        User user = userRepository.findById(request.getUserId())
+        // 닉네임 중복 체크 추가
+        String nickname = request.getNickname().trim();
+        if (userPetRepository.existsByNickname(nickname)) {
+            throw new BadRequestException("이미 존재하는 닉네임입니다.");
+            // 또는 ErrorStatus에 새 에러 메시지 추가해서 활용
+        }
+
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
         Pet pet = petRepository.findById(request.getPetId())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.PET_NOT_FOUND.getMessage()));
@@ -39,6 +47,7 @@ public class UserPetService {
                 .user(user)
                 .pet(pet)
                 .level(1)
+                .maxExp(50)
                 .status(PetStatus.휴식)
                 .message(null)
                 .isProud(false)
@@ -47,8 +56,12 @@ public class UserPetService {
                 .build();
 
         userPetRepository.save(userPet);
-
-
-
     }
+
+    public UserPetFullDto getUserPetFullInfo(Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("해당 유저의 펫 정보가 없습니다."));
+        return new UserPetFullDto(userPet);
+    }
+
 }

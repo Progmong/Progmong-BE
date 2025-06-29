@@ -1,11 +1,18 @@
 package com.progmong.api.explore.service;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
 import com.progmong.api.explore.dto.ProblemRecordQueryDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
-import com.progmong.api.explore.entity.*;
+import com.progmong.api.explore.entity.Problem;
+import com.progmong.api.explore.entity.ProblemRecord;
+import com.progmong.api.explore.entity.RecommendProblem;
+import com.progmong.api.explore.entity.RecommendStatus;
+import com.progmong.api.explore.entity.Result;
+import com.progmong.api.explore.entity.SolvedProblem;
 import com.progmong.api.explore.repository.ProblemRecordRepository;
 import com.progmong.api.explore.repository.ProblemRepository;
 import com.progmong.api.explore.repository.RecommendProblemRepository;
@@ -15,22 +22,28 @@ import com.progmong.api.pet.entity.UserPet;
 import com.progmong.api.pet.repository.UserPetRepository;
 import com.progmong.api.user.entity.User;
 import com.progmong.api.user.repository.UserRepository;
+import com.progmong.common.exception.BadRequestException;
+import com.progmong.common.exception.BaseException;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +57,11 @@ public class ExploreService {
 
     @Transactional
     public RecommendProblemListResponseDto startExplore(Long userId, int minLevel, int maxLevel) {
+        // 0. 이미 추천된 문제가 있는지 확인
+        boolean exists = recommendProblemRepository.existsByUserId(userId);
+        if (exists) {
+            throw new BadRequestException(ErrorStatus.RECOMMEND_PROBLEM_ALREADY_EXISTS.getMessage());
+        }
         // 1. 유저의 관심 태그 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
@@ -52,15 +70,17 @@ public class ExploreService {
                 .map(interestTag -> interestTag.getTag().getName())
                 .toList();
 
+        // 2. 조건에 따라 문제 추천
+        List<Problem> recommend;
         if (tags.isEmpty()) {
-            throw new NotFoundException(ErrorStatus.USER_INTEREST_NOT_FOUND.getMessage());
+            recommend = problemRepository.findRandomUnsolvedProblemsByLevelOnly(minLevel, maxLevel, userId);
+        } else {
+            recommend = problemRepository.findRandomUnsolvedProblemsByTagsAndLevel(tags, minLevel, maxLevel, userId);
         }
 
-
-        // 2. 푼 문제 제외 랜덤 추천 (태그, 레벨 필터)
-        List<Problem> recommend = problemRepository.findRandomUnsolvedProblemsByTagsAndLevel(
-                tags, minLevel, maxLevel, userId
-        );
+        if (recommend.isEmpty()) {
+            throw new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_NOT_FOUND.getMessage());
+        }
 
         // 3. 첫 문제는 전투, 나머지는 대기로 상태 나눠서 저장
         List<RecommendProblem> recommendProblems = new ArrayList<>();
@@ -93,14 +113,15 @@ public class ExploreService {
                 .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
 
-        return new RecommendProblemListResponseDto(recommendProblemResponseDto,false,null);
+        return new RecommendProblemListResponseDto(recommendProblemResponseDto, false, null);
     }
 
     @Transactional
     public RecommendProblemListResponseDto passExplore(Long userId) {
         // 1. 현재 전투 중인 문제를 패스로 변경
         RecommendProblem current = recommendProblemRepository.findByUserIdAndStatus(userId, RecommendStatus.전투)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
+                .orElseThrow(
+                        () -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
         current.updateStatus(RecommendStatus.패스);
 
         // 2. 문제 기록 저장 (이미 존재하면 생략)
@@ -117,7 +138,6 @@ public class ExploreService {
             problemRecordRepository.save(problemRecord);
         }
 
-
         // 3. 다음 순서 문제를 전투로 변경
         int nextSequence = current.getSequence() + 1;
         Optional<RecommendProblem> next = recommendProblemRepository
@@ -127,7 +147,6 @@ public class ExploreService {
         } else {
 
         }
-
 
         // 4. 다음 문제 없으면 결과, 있으면 다음 문제
 
@@ -143,13 +162,16 @@ public class ExploreService {
                     .mapToInt(RecommendProblem::getExp)
                     .sum();
 
+            UserPet userPet = userPetRepository.findByUserId(userId)
+                    .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+            userPet.updateStatus(PetStatus.휴식);
+
             recommendProblemRepository.deleteAllByUserId(userId);
 
             return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, totalGainedExp);
         } else {
             return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, null);
         }
-
 
 
     }
@@ -162,14 +184,15 @@ public class ExploreService {
                 .map(RecommendProblemResponseDto::fromEntity)
                 .toList();
 
-        return new RecommendProblemListResponseDto(problemDtos,false,null);
+        return new RecommendProblemListResponseDto(problemDtos, false, null);
     }
 
     @Transactional
     public RecommendProblemListResponseDto successExplore(Long userId) {
         // 1. 현재 전투 중인 문제를 성공으로 변경
         RecommendProblem current = recommendProblemRepository.findByUserIdAndStatus(userId, RecommendStatus.전투)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
+                .orElseThrow(
+                        () -> new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_IN_BATTLE_NOT_FOUND.getMessage()));
         current.updateStatus(RecommendStatus.성공);
 
         // 2. 경험치 펫에 반영
@@ -198,7 +221,8 @@ public class ExploreService {
         }
 
         // 4. SolvedProblem 중복 체크 후 저장
-        boolean alreadySolved = solvedProblemRepository.existsByUserIdAndProblemId(userId, current.getProblem().getId());
+        boolean alreadySolved = solvedProblemRepository.existsByUserIdAndProblemId(userId,
+                current.getProblem().getId());
         if (!alreadySolved) {
             SolvedProblem solvedProblem = SolvedProblem.builder()
                     .user(current.getUser())
@@ -207,15 +231,12 @@ public class ExploreService {
             solvedProblemRepository.save(solvedProblem);
         }
 
-
-
         // 5. 다음 문제 전투로 전환
         int nextSequence = current.getSequence() + 1;
         Optional<RecommendProblem> next = recommendProblemRepository
                 .findByUserIdAndSequence(userId, nextSequence);
 
         next.ifPresent(p -> p.updateStatus(RecommendStatus.전투));
-
 
         // 6. 다음 문제 없으면 결과, 있으면 다음 문제
         List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
@@ -230,15 +251,14 @@ public class ExploreService {
                     .mapToInt(RecommendProblem::getExp)
                     .sum();
 
+            userPet.updateStatus(PetStatus.휴식);
+
             recommendProblemRepository.deleteAllByUserId(userId);
 
             return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, totalGainedExp);
         } else {
             return new RecommendProblemListResponseDto(recommendProblemResponseDto, isFinish, null);
         }
-
-
-
 
 
     }
@@ -293,4 +313,29 @@ public class ExploreService {
         // 2. 해당 사용자의 총 사냥 기록 수 반환
         return problemRecordRepository.countByUser(user);
     }
+
+    public boolean checkSolvedAcProblem(String bojId, int problemId) {
+        String url = "https://solved.ac/api/v3/search/problem?query=solved_by:" + bojId + "+id:" + problemId;
+
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // 응답에서 count 값 추출
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(response.body());
+            int count = jsonNode.get("count").asInt();
+
+            return count == 1;
+        } catch (Exception e) {
+            throw new BaseException(HttpStatus.INTERNAL_SERVER_ERROR, "solved.ac API 호출 실패");
+        }
+    }
+
+
 }

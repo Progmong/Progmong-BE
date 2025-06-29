@@ -2,7 +2,17 @@ package com.progmong.api.pet.entity;
 
 import com.progmong.api.user.entity.User;
 import com.progmong.common.entity.BaseTimeEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,7 +72,7 @@ public class UserPet extends BaseTimeEntity {
         while (this.currentExp >= this.maxExp) {
             this.currentExp -= this.maxExp;
             this.level++;
-            this.maxExp += 200;
+            this.maxExp += 50;
 
             if (this.level == 6 || this.level == 11 || this.level == 16) {
                 this.evolutionStage++;

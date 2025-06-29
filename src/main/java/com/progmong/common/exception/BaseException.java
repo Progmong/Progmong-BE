@@ -4,11 +4,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.servlet.support.JstlUtils;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class BaseException extends RuntimeException{
+public class BaseException extends RuntimeException {
     HttpStatus statusCode;
     String responseMessage;
 

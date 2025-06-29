@@ -1,6 +1,7 @@
 package com.progmong.common.config.security;
 
 import com.progmong.common.config.jwt.JwtConfig;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,8 +21,6 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -32,6 +31,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -44,12 +44,16 @@ public class SecurityConfig {
                             "http://localhost:5200",
                             "http://localhost:5173"
                     ));
-                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH","DELETE", "OPTIONS"));
+                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
-                    config.setAllowedHeaders(Arrays.asList("Authorization", "Authorization-Refresh","Content-Type", "X-Requested-With", "Accept", "Origin"));
+
+                    config.setAllowedHeaders(
+                            Arrays.asList("Authorization", "Authorization-Refresh", "Content-Type", "X-Requested-With",
+                                    "Accept", "Origin"));
+
                     config.setMaxAge(3600L);
                     config.addExposedHeader("Authorization");
-                    config.addExposedHeader("Authorization-Refresh");
+                    config.addExposedHeader("Authorization_refresh");
                     return config;
                 }))
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
@@ -57,11 +61,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api-doc", "/health", "/v3/api-docs/**",
-                                "/swagger-resources/**","/swagger-ui/**",
+                                "/swagger-resources/**", "/swagger-ui/**",
                                 "/h2-console/**"
                         ).permitAll() // 스웨거, H2, healthCheck 허가
                         .requestMatchers("/api/v1/users/login",
                                 "/api/v1/users/register",
+                                "/api/v1/solvedac/**",
                                 "/api/v1/users/verify-email",
                                 "/api/v1/users/verification-email-code",
                                 "/api/v1/users/reset-password/request",
@@ -85,4 +90,3 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 }
-
