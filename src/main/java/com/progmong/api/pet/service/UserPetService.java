@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserPetService {
 
+    public static final String DEFAULT_MESSAGE = "프로그몽! 만나서 반가워요!";
     private final UserPetRepository userPetRepository;
     private final UserRepository userRepository;
     private final PetRepository petRepository;
@@ -47,7 +48,7 @@ public class UserPetService {
                 .pet(pet)
                 .level(1)
                 .status(PetStatus.휴식)
-                .message("프로그몽! 만나서 반가워요!")
+                .message(DEFAULT_MESSAGE)
                 .isProud(false)
                 .nickname(request.getNickname())
                 .evolutionStage(1)
