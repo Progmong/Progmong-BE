@@ -1,8 +1,5 @@
 package com.progmong.api.user.entity;
 
-import com.progmong.api.community.entity.Post;
-import com.progmong.api.explore.entity.SolvedProblem;
-import com.progmong.api.pet.entity.UserPet;
 import com.progmong.api.tag.entity.InterestTag;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
