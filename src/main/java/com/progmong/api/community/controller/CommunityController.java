@@ -55,6 +55,72 @@ public class CommunityController {
     {
         return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
     }
+
+    @GetMapping("/post/modify/{postId}")
+    @Operation(summary = "게시글 수정", description = "게시글id로 수정하시길 바랍니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 수정이 실패했습니다"),
+    })
+    public ResponseEntity<ApiResponse<PostDetailResDto>> modify(@PathVariable Long postId)
+    {
+        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+    }
+
+    @GetMapping("/post/delete/{postId}")
+    @Operation(summary = "게시글 삭제", description = "게시글id로 삭제하시길 바랍니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 삭제가 실패했습니다"),
+    })
+    public ResponseEntity<ApiResponse<PostDetailResDto>> delete(@PathVariable Long postId)
+    {
+        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+    }
+
+    @GetMapping("/showcase/all")
+    @Operation(summary = "자랑하기 목록 조회", description = "제목,")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "자랑하기 등록 성공"),
+    })
+    public ResponseEntity<ApiResponse<List<PostListElementResDto>>> showcaseAll()
+    {
+        return ApiResponse.success(SuccessStatus.POST_ALL_SUCCESS,postService.findAll());
+    }
+
+    @GetMapping("/showcase/detail/{postId}")
+    @Operation(summary = "자랑하기 조회", description = "게시글id로 조회하시길 바랍니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "자랑하기 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "자랑하기 조회에 실패했습니다"),
+    })
+    public ResponseEntity<ApiResponse<PostDetailResDto>> showcaseDetail(@PathVariable Long postId)
+    {
+        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+    }
+
+    @GetMapping("/showcase/modify/{postId}")
+    @Operation(summary = "자랑하기 수정", description = "게시글id로 조회하시길 바랍니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "자랑하기 수정 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "자랑하기 수정이 실패했습니다"),
+    })
+    public ResponseEntity<ApiResponse<PostDetailResDto>> showcaseModify(@PathVariable Long postId)
+    {
+        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+    }
+
+    @GetMapping("/post/delete/{postId}")
+    @Operation(summary = "자랑하기 삭제", description = "게시글id로 삭제하시길 바랍니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "자랑하기 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "자랑하기 삭제가 실패했습니다"),
+    })
+    public ResponseEntity<ApiResponse<PostDetailResDto>> showcaseDelete(@PathVariable Long postId)
+    {
+        return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
+    }
+
 }
 
 //(@RequestBody PostWriteDto postWriteDto, @AuthenticationPrincipal SecurityUser securityUser )
