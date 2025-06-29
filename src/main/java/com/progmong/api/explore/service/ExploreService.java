@@ -22,6 +22,7 @@ import com.progmong.api.pet.entity.UserPet;
 import com.progmong.api.pet.repository.UserPetRepository;
 import com.progmong.api.user.entity.User;
 import com.progmong.api.user.repository.UserRepository;
+import com.progmong.common.exception.BadRequestException;
 import com.progmong.common.exception.BaseException;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.response.ErrorStatus;
@@ -56,6 +57,11 @@ public class ExploreService {
 
     @Transactional
     public RecommendProblemListResponseDto startExplore(Long userId, int minLevel, int maxLevel) {
+        // 0. 이미 추천된 문제가 있는지 확인
+        boolean exists = recommendProblemRepository.existsByUserId(userId);
+        if (exists) {
+            throw new BadRequestException(ErrorStatus.RECOMMEND_PROBLEM_ALREADY_EXISTS.getMessage());
+        }
         // 1. 유저의 관심 태그 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
@@ -64,14 +70,17 @@ public class ExploreService {
                 .map(interestTag -> interestTag.getTag().getName())
                 .toList();
 
+        // 2. 조건에 따라 문제 추천
+        List<Problem> recommend;
         if (tags.isEmpty()) {
-            throw new NotFoundException(ErrorStatus.USER_INTEREST_NOT_FOUND.getMessage());
+            recommend = problemRepository.findRandomUnsolvedProblemsByLevelOnly(minLevel, maxLevel, userId);
+        } else {
+            recommend = problemRepository.findRandomUnsolvedProblemsByTagsAndLevel(tags, minLevel, maxLevel, userId);
         }
 
-        // 2. 푼 문제 제외 랜덤 추천 (태그, 레벨 필터)
-        List<Problem> recommend = problemRepository.findRandomUnsolvedProblemsByTagsAndLevel(
-                tags, minLevel, maxLevel, userId
-        );
+        if (recommend.isEmpty()) {
+            throw new NotFoundException(ErrorStatus.RECOMMEND_PROBLEM_NOT_FOUND.getMessage());
+        }
 
         // 3. 첫 문제는 전투, 나머지는 대기로 상태 나눠서 저장
         List<RecommendProblem> recommendProblems = new ArrayList<>();
@@ -152,6 +161,10 @@ public class ExploreService {
                     .filter(rp -> rp.getStatus() == RecommendStatus.성공)
                     .mapToInt(RecommendProblem::getExp)
                     .sum();
+
+            UserPet userPet = userPetRepository.findByUserId(userId)
+                    .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+            userPet.updateStatus(PetStatus.휴식);
 
             recommendProblemRepository.deleteAllByUserId(userId);
 
@@ -237,6 +250,8 @@ public class ExploreService {
                     .filter(rp -> rp.getStatus() == RecommendStatus.성공)
                     .mapToInt(RecommendProblem::getExp)
                     .sum();
+
+            userPet.updateStatus(PetStatus.휴식);
 
             recommendProblemRepository.deleteAllByUserId(userId);
 

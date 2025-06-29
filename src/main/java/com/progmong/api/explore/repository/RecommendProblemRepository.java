@@ -14,4 +14,6 @@ public interface RecommendProblemRepository extends JpaRepository<RecommendProbl
     List<RecommendProblem> findAllByUserIdOrderBySequence(Long userId);
 
     void deleteAllByUserId(Long userId);
+
+    boolean existsByUserId(Long userId);
 }

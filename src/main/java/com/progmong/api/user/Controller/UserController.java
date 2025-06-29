@@ -1,23 +1,18 @@
 package com.progmong.api.user.Controller;
 
-import com.progmong.api.user.dto.EmailVerificationCodeRequestDto;
-import com.progmong.api.user.dto.EmailVerificationRequestDto;
-import com.progmong.api.user.dto.PasswordResetConfirmDto;
-import com.progmong.api.user.dto.PasswordResetRequestDto;
-import com.progmong.api.user.dto.UserInfoResponseDto;
-import com.progmong.api.user.dto.UserLoginRequestDto;
-import com.progmong.api.user.dto.UserLoginResponseDto;
-import com.progmong.api.user.dto.UserRegisterRequestDto;
+import com.progmong.api.user.dto.*;
 import com.progmong.api.user.service.EmailService;
 import com.progmong.api.user.service.UserService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.exception.BadRequestException;
+import com.progmong.common.exception.UnauthorizedException;
 import com.progmong.common.response.ApiResponse;
 import com.progmong.common.response.ErrorStatus;
 import com.progmong.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -29,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -165,6 +161,7 @@ public class UserController {
         return ApiResponse.success(SuccessStatus.GET_USER_INFO_SUCCESS, userInfo);
     }
 
+
     // 유저 닉네임 수정
     @Operation(
             summary = "사용자 닉네임 수정 API",
@@ -188,5 +185,39 @@ public class UserController {
         return ApiResponse.success_only(SuccessStatus.UPDATE_USER_NICKNAME_SUCCESS);
     }
 
+    @PostMapping("/reissue")
+    @Operation(
+            summary = "Access Token 재발급 API",
+            description = "Refresh Token을 이용해 Access Token을 재발급합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Access Token 재발급 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Refresh Token이 유효하지 않습니다.")
+    })
+    public ResponseEntity<ApiResponse<UserAccessTokenResponseDto>> reissueAccessToken(
+            HttpServletRequest request) {
+
+        String refreshTokenHeader = request.getHeader("Authorization_refresh");
+        if (refreshTokenHeader == null ) {
+            throw new UnauthorizedException("Refresh Token이 없습니다.");
+        }
+
+        UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshTokenHeader);
+        return ApiResponse.success(SuccessStatus.OK, responseDto);
+    }
+
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = "인증된 사용자의 계정을 탈퇴 처리합니다. 관련 데이터도 함께 삭제됩니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없습니다.")
+    })
+    @DeleteMapping()
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@AuthenticationPrincipal SecurityUser securityUser) {
+        userService.deleteUser(securityUser.getId());
+        return ApiResponse.success_only(SuccessStatus.USER_DELETED);
+    }
 
 }

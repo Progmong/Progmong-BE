@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +49,7 @@ public class UserPetService {
                 .user(user)
                 .pet(pet)
                 .level(1)
+                .maxExp(50)
                 .status(PetStatus.휴식)
                 .message(DEFAULT_MESSAGE)
                 .isProud(false)
@@ -58,9 +61,11 @@ public class UserPetService {
     }
 
     public UserPetFullDto getUserPetFullInfo(Long userId) {
-        UserPet userPet = userPetRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.PET_NOT_FOUND.getMessage()));
-        return new UserPetFullDto(userPet);
+        Optional<UserPet> userPet = userPetRepository.findByUserId(userId);
+        if (userPet.isEmpty()) {
+            return new UserPetFullDto(); // 빈 DTO 반환
+        }
+        return new UserPetFullDto(userPet.get());
     }
 
 
