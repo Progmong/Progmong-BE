@@ -115,8 +115,23 @@ public class UserService {
         return new UserInfoResponseDto(user.getId(), user.getBojId(), user.getEmail(), user.getNickname());
     }
 
-    // Access Token 재발급
+    // 유저 닉네임 수정
+    @Transactional
+    public void updateNickname(Long userId, String nickname) {
+        // 해당 유저를 찾을 수 없을 경우 예외처리
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
+        // 닉네임 중복 검증
+        if (userRepository.findByNickname(nickname).isPresent()) {
+            throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_NICKNAME.getMessage());
+        }
+
+        user.updateNickname(nickname);
+        userRepository.save(user);
+    }
+
+    // Access Token 재발급
     public UserAccessTokenResponseDto reissueAccessTokenByRefreshToken(String refreshToken) {
         if (!jwtService.isRefreshTokenValid(refreshToken)) {
             throw new UnauthorizedException("Refresh Token이 유효하지 않습니다.");
@@ -131,6 +146,14 @@ public class UserService {
         String newAccessToken = jwtService.createAccessToken(user.getId());
 
         return new UserAccessTokenResponseDto(newAccessToken);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        userRepository.delete(user);
     }
 
 }

@@ -16,11 +16,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
 public class UserPetService {
 
+    public static final String DEFAULT_MESSAGE = "프로그몽! 만나서 반가워요!";
     private final UserPetRepository userPetRepository;
     private final UserRepository userRepository;
     private final PetRepository petRepository;
@@ -34,8 +37,7 @@ public class UserPetService {
         // 닉네임 중복 체크 추가
         String nickname = request.getNickname().trim();
         if (userPetRepository.existsByNickname(nickname)) {
-            throw new BadRequestException("이미 존재하는 닉네임입니다.");
-            // 또는 ErrorStatus에 새 에러 메시지 추가해서 활용
+            throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET_NICKNAME.getMessage());
         }
 
         User user = userRepository.findById(userId)
@@ -49,7 +51,7 @@ public class UserPetService {
                 .level(1)
                 .maxExp(50)
                 .status(PetStatus.휴식)
-                .message(null)
+                .message(DEFAULT_MESSAGE)
                 .isProud(false)
                 .nickname(request.getNickname())
                 .evolutionStage(1)
@@ -59,9 +61,53 @@ public class UserPetService {
     }
 
     public UserPetFullDto getUserPetFullInfo(Long userId) {
-        UserPet userPet = userPetRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException("해당 유저의 펫 정보가 없습니다."));
-        return new UserPetFullDto(userPet);
+        Optional<UserPet> userPet = userPetRepository.findByUserId(userId);
+        if (userPet.isEmpty()) {
+            return new UserPetFullDto(); // 빈 DTO 반환
+        }
+        return new UserPetFullDto(userPet.get());
     }
 
+
+    // 펫 메시지 수정 메서드 추가
+    @Transactional
+    public void updatePetMessage(Long userId, String message) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+
+        userPet.setMessage(message);
+        userPetRepository.save(userPet);
+    }
+
+    // 펫 닉네임 수정 메서드 추가
+    @Transactional
+    public void updatePetNickname(String petNickName, Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+
+        // 닉네임 중복 체크
+        String newNickname = petNickName.trim();
+        if (userPetRepository.existsByNickname(newNickname)) {
+            throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_PET_NICKNAME.getMessage());
+        }
+
+        userPet.setNickname(newNickname);
+        userPetRepository.save(userPet);
+    }
+
+    // 펫 공개 여부 변경 메서드 추가
+    @Transactional
+    public void togglePetVisibility(Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+
+        userPet.setIsProud(!userPet.isProud()); // 현재 상태를 반전시킴
+        userPetRepository.save(userPet);
+    }
+
+    public boolean isPetProud(Long userId) {
+        UserPet userPet = userPetRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_PET_NOT_FOUND.getMessage()));
+        return userPet.isProud();
+    }
 }

@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 
@@ -52,11 +53,13 @@ public class UserPet extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private PetStatus status;
 
+    @Setter
     private String message;
 
     @ColumnDefault("false")
     private boolean isProud;
 
+    @Setter
     private String nickname;
 
     @ColumnDefault("1")
@@ -78,5 +81,9 @@ public class UserPet extends BaseTimeEntity {
                 this.evolutionStage++;
             }
         }
+    }
+
+    public void setIsProud(boolean b) {
+        this.isProud = b;
     }
 }

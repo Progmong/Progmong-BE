@@ -1,14 +1,15 @@
 package com.progmong.api.user.entity;
 
+import com.progmong.api.community.entity.Comment;
+import com.progmong.api.community.entity.Liked;
+import com.progmong.api.community.entity.Post;
+import com.progmong.api.explore.entity.ProblemRecord;
+import com.progmong.api.explore.entity.RecommendProblem;
+import com.progmong.api.explore.entity.SolvedProblem;
+import com.progmong.api.pet.entity.UserPet;
 import com.progmong.api.tag.entity.InterestTag;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -42,7 +43,38 @@ public class User {
     @Builder.Default
     private List<InterestTag> interestTags = new ArrayList<>();
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private UserPet userPet;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<SolvedProblem> solvedProblems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<ProblemRecord> problemRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<RecommendProblem> recommendProblems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<Liked> liked = new ArrayList<>();
+
     public void updatePassword(String password) {
         this.password = password;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

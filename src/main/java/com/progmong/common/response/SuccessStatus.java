@@ -13,9 +13,10 @@ public enum SuccessStatus {
     OK(HttpStatus.OK, "요청이 성공적으로 처리되었습니다."),
     CREATED(HttpStatus.CREATED, "리소스가 성공적으로 생성되었습니다."),
 
-    // 커스텀 성공 메시지 예시
+    // 커스텀 성공 메시지
     USER_REGISTERED(HttpStatus.CREATED, "회원가입이 완료되었습니다."),
     USER_LOGGED_IN(HttpStatus.OK, "로그인이 성공적으로 완료되었습니다."),
+    USER_DELETED(HttpStatus.OK,"회원 탈퇴가 완료되었습니다."),
     SEND_EMAIL_VERIFICATION_CODE_SUCCESS(HttpStatus.OK, "이메일 인증코드 발송 성공"),
     SEND_EMAIL_VERIFICATION_SUCCESS(HttpStatus.OK, "이메일 코드 인증 성공"),
     SEND_PASSWORD_RESET_CODE_SUCCESS(HttpStatus.OK, "비밀번호 초기화 코드 전송 성공"),
@@ -44,7 +45,12 @@ public enum SuccessStatus {
     EXPLORE_GET(HttpStatus.OK, "탐험 조회 성공"),
     EXPLORE_PROBLEM_SUCCESS(HttpStatus.OK, "탐험 문제 풀이 성공"),
     EXPLORE_CHECK_PROBLEM_SUCCESS(HttpStatus.OK, "문제 풀이 여부 조회 성공"),
-    EXPLORE_PASS(HttpStatus.OK, "탐험 패스 성공");
+    EXPLORE_PASS(HttpStatus.OK, "탐험 패스 성공"),
+    PET_NICKNAME_UPDATED(HttpStatus.OK, "펫 닉네임이 변경되었습니다."),
+    PET_MESSAGE_UPDATED(HttpStatus.OK, "펫 메시지가 변경되었습니다."),
+    PET_PROUD_STATUS_LOADED(HttpStatus.OK, "펫 자랑 상태 조회 성공"),
+    UPDATE_USER_NICKNAME_SUCCESS(HttpStatus.OK, "닉네임이 성공적으로 변경되었습니다."),
+    ;
 
 
     private final HttpStatus httpStatus;
