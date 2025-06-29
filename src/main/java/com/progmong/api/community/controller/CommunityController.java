@@ -110,7 +110,7 @@ public class CommunityController {
         return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS,postService.findById(postId));
     }
 
-    @GetMapping("/post/delete/{postId}")
+    @GetMapping("/showcase/delete/{postId}")
     @Operation(summary = "자랑하기 삭제", description = "게시글id로 삭제하시길 바랍니다")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "자랑하기 삭제 성공"),
