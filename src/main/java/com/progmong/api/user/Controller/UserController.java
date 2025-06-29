@@ -18,11 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -179,6 +175,20 @@ public class UserController {
 
         UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshTokenHeader);
         return ApiResponse.success(SuccessStatus.OK, responseDto);
+    }
+
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = "인증된 사용자의 계정을 탈퇴 처리합니다. 관련 데이터도 함께 삭제됩니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없습니다.")
+    })
+    @DeleteMapping()
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@AuthenticationPrincipal SecurityUser securityUser) {
+        userService.deleteUser(securityUser.getId());
+        return ApiResponse.success_only(SuccessStatus.USER_DELETED);
     }
 
 }

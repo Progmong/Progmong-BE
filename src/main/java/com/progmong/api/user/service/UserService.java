@@ -133,4 +133,12 @@ public class UserService {
         return new UserAccessTokenResponseDto(newAccessToken);
     }
 
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        userRepository.delete(user);
+    }
+
 }
