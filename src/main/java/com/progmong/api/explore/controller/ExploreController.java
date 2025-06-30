@@ -1,7 +1,6 @@
 package com.progmong.api.explore.controller;
 
 import com.progmong.api.explore.dto.ExploreStartRequestDto;
-import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.service.ExploreService;
 import com.progmong.common.config.security.SecurityUser;
@@ -77,25 +76,26 @@ public class ExploreController {
 
 
     @GetMapping("/records/all")
-    public ApiResponse<ProblemRecordListQueryDto> getAllRecords(Long userId) {
-        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD, exploreService.getAllProblemRecords(userId)).getBody();
+    @Operation(summary = "모든 사냥 기록 조회", description = "유저의 전체 사냥 기록을 조회합니다.")
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> getAllRecords(
+            @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        RecommendProblemListResponseDto responseDto = exploreService.getAllProblemRecords(securityUser.getId());
+        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD, responseDto);
     }
 
     @GetMapping("/records")
-    public ApiResponse<ProblemRecordListQueryDto> getRecentRecords(
-            Long userId,
+    @Operation(summary = "최근 사냥 기록 조회", description = "최근 사냥 기록을 페이지네이션하여 조회합니다.")
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> getRecentRecords(
+            @AuthenticationPrincipal SecurityUser securityUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD,
-                exploreService.getRecentProblemRecords(userId, page, size)).getBody();
+        RecommendProblemListResponseDto responseDto = exploreService.getRecentProblemRecords(
+                securityUser.getId(), page, size);
+        return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD, responseDto);
     }
 
-    @GetMapping("/records/count")
-    public ApiResponse<Long> getTotalRecordCount(Long userId) {
-        return ApiResponse.success(SuccessStatus.GET_ALL_RECORD_COUNT, exploreService.getProblemRecordCount(userId))
-                .getBody();
-    }
 
     @PostMapping("/success")
     @Operation(
