@@ -4,6 +4,7 @@ package com.progmong.api.explore.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
+import com.progmong.api.explore.dto.RecommendProblemListResponseDto2;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
 import com.progmong.api.explore.entity.Problem;
 import com.progmong.api.explore.entity.ProblemRecord;
@@ -277,19 +278,21 @@ public class ExploreService {
 
 
     @Transactional(readOnly = true)
-    public RecommendProblemListResponseDto getRecentProblemRecords(Long userId, int page, int size) {
+    public RecommendProblemListResponseDto2 getRecentProblemRecords(Long userId, int page, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
 
+
         List<RecommendProblemResponseDto> recommendDtos = IntStream.range(0, recordsPage.getContent().size())
                 .mapToObj(i -> convertRecordToRecommendDto(recordsPage.getContent().get(i), i + 1,
                         toStatus(recordsPage.getContent().get(i).getResult())))
                 .toList();
 
-        return new RecommendProblemListResponseDto(recommendDtos, true, null);
+
+        return new RecommendProblemListResponseDto2(recommendDtos, true, null, recordsPage.getTotalPages());
     }
 
 
