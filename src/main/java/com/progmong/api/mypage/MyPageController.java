@@ -15,15 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MyPageController {
 
-    private final MypageFacadeService mypageFacadeService;
+    private final MyPageFacadeService mypageFacadeService;
 
     /**
      * 마이페이지 통합 정보 조회
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<MyPageDto>> getMypage(
+    public ResponseEntity<ApiResponse<MyPageDto>> getMyPage(
             @AuthenticationPrincipal SecurityUser user) {
-        MyPageDto responseDto = mypageFacadeService.getMypage(user.getId());
+        MyPageDto responseDto = mypageFacadeService.getMyPageData(user.getId());
         return ApiResponse.success(SuccessStatus.MYPAGE_SUCCESS, responseDto);
     }
 }
