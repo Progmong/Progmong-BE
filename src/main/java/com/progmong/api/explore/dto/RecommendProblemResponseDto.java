@@ -39,7 +39,7 @@ public class RecommendProblemResponseDto {
         );
     }
 
-    private static String levelToTier(int level) {
+    public static String levelToTier(int level) {
         if (level >= 1 && level <= 5) {
             return "브론즈 " + roman[6 - level];
         }
