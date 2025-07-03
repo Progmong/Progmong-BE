@@ -55,7 +55,7 @@ public class SolvedAcImportService {
 
         List<String> levelRanges = List.of("(*1..5)", "(*6..10)", "(*11..15)", "(*16..20)", "(*21..25)");
         for (String levelRange : levelRanges) {
-            for (int page = 1; page <= 2; page++) {
+            for (int page = 1; page <= 5; page++) {
                 String tagQuery = "tag:math or tag:implementation or tag:greedy or tag:string or " +
                         "tag:data_structures or tag:graphs or tag:dp or tag:geometry";
                 String query = levelRange + " " + tagQuery;
