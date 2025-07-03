@@ -2,7 +2,6 @@ package com.progmong.api.explore.controller;
 
 import com.progmong.api.explore.dto.ExploreStartRequestDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
-import com.progmong.api.explore.dto.RecommendProblemListResponseDto2;
 import com.progmong.api.explore.service.ExploreService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
@@ -87,12 +86,12 @@ public class ExploreController {
 
     @GetMapping("/records")
     @Operation(summary = "최근 사냥 기록 조회", description = "최근 사냥 기록을 페이지네이션하여 조회합니다.")
-    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto2>> getRecentRecords(
+    public ResponseEntity<ApiResponse<RecommendProblemListResponseDto>> getRecentRecords(
             @AuthenticationPrincipal SecurityUser securityUser,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        RecommendProblemListResponseDto2 responseDto = exploreService.getRecentProblemRecords(
+        RecommendProblemListResponseDto responseDto = exploreService.getRecentProblemRecords(
                 securityUser.getId(), page, size);
         return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD, responseDto);
     }
