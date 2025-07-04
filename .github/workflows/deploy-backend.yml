@@ -54,23 +54,8 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          echo "🔍 Java 버전 확인:"
-          java -version || echo "⚠️ Java 설치 안됨"
-
-          echo "🗂 현재 경로:"
-          pwd
-
-          echo "📁 파일 목록:"
-          ls -l ~/app/build/libs
-
-          echo "📦 JAR 실행 시작"
-          cd ~/app/build/libs || { echo "❌ 경로 없음"; exit 1; }
-
+          pkill -f 'java -jar' || true
+          cd ~/app/build/libs || exit 1
           nohup java -jar progmong-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
-          sleep 2
-
-          echo "📄 nohup.out 내용:"
-          cat nohup.out || echo "❌ nohup.out 없음"
-
           exit 0
 
