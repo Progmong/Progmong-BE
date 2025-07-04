@@ -27,6 +27,9 @@ jobs:
       
     - name: Rename application-aws.properties
       run: mv ./src/main/resources/application-aws.properties ./src/main/resources/application.properties
+  
+    - name: Check contents of application.properties
+      run: cat ./src/main/resources/application.properties
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew  
