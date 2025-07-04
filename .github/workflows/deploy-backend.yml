@@ -57,5 +57,6 @@ jobs:
           pkill -f 'java -jar' || true
           cd ~/app/build/libs || exit 1
           nohup java -jar progmong-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
+          sleep 5
           exit 0
 
