@@ -47,15 +47,20 @@ jobs:
         source: "build/libs/*.jar"
         target: "~/app"
         
-    - name: Kill old process
+    - name: Kill running app
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          echo "🔁 기존 프로세스 종료"
-          pkill -f 'progmong-0.0.1-SNAPSHOT.jar' || true
+          echo "🔍 현재 실행 중인 프로세스:"
+          ps aux | grep java
+          
+          echo "🔁 기존 프로세스 종료 시도"
+          pkill -f 'progmong-0.0.1-SNAPSHOT.jar' || echo "⚠️ 프로세스 종료 실패, 무시함"
+    
+          echo "✅ 종료 처리 완료"
           
     - name: SSH & Restart App
       uses: appleboy/ssh-action@v1.0.0
