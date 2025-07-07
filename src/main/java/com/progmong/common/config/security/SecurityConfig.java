@@ -42,7 +42,8 @@ public class SecurityConfig {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Arrays.asList(
                             "http://localhost:5200",
-                            "http://localhost:5173"
+                            "http://localhost:5173",
+                            "https://progmong-fe.vercel.app:5200"
                     ));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
