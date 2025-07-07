@@ -77,4 +77,16 @@ public class User {
     public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
+
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void removeRefreshToken() {
+        this.refreshToken = null;
+    }
+
 }
