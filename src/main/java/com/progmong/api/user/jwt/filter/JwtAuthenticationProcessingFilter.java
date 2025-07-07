@@ -8,12 +8,15 @@ import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.exception.UnauthorizedException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,41 +25,41 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
-
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
-
 
     @Value("${jwt.access.header}")
     private String accessTokenHeader;
 
     @Value("${jwt.refresh.header}")
-    private String refreshTokenHeader;
+    private String refreshTokenHeader; // 쿠키 이름
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper; // ObjectMapper 주입 필요
+    private final ObjectMapper objectMapper;
 
-    // Swagger UI 등의 특정 URI를 필터 적용 대상에서 제외할 때 사용
     private static final String[] SWAGGER_URIS = {
             "/swagger-ui",
             "/v3/api-docs",
             "/swagger-ui/index.html"
     };
-   
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestURI = request.getRequestURI();
+
+        // Swagger 관련 요청 제외
         for (String uri : SWAGGER_URIS) {
             if (requestURI.startsWith(uri)) {
                 return true;
             }
         }
-        return false;
+
+        // 인증이 필요 없는 URI (permitAll 대상)
+        return requestURI.startsWith("/api/v1/users/login");
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -64,39 +67,32 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             // 1. Access Token 검증
-            Optional<String> accessToken = extractToken(request, accessTokenHeader);
-
-            if (accessToken.isPresent()) {
-                boolean valid = jwtService.isTokenValid(accessToken.get()); // 여기서 exception 발생 가능
-                if (valid) {
-                    jwtService.extractUserId(accessToken.get())
-                            .flatMap(id -> findAndAuthenticateUser(id, "AccessToken"))
-                            .ifPresentOrElse(
-                                    this::setAuthentication,
-                                    () -> log.warn("AccessToken 유효하지만 사용자 정보 없음")
-                            );
-                    filterChain.doFilter(request, response);
-                    return;
-                }
+            Optional<String> accessToken = extractAccessToken(request, accessTokenHeader);
+            if (accessToken.isPresent() && jwtService.isTokenValid(accessToken.get())) {
+                jwtService.extractUserId(accessToken.get())
+                        .flatMap(id -> findAndAuthenticateUser(id, "AccessToken"))
+                        .ifPresentOrElse(
+                                this::setAuthentication,
+                                () -> log.warn("AccessToken 유효하지만 사용자 정보 없음")
+                        );
+                filterChain.doFilter(request, response);
+                return;
             }
 
-            // 2. Refresh Token 검증
-            Optional<String> refreshToken = extractRefreshToken(request, refreshTokenHeader);
-            if (refreshToken.isPresent()) {
-                boolean valid = jwtService.isRefreshTokenValid(refreshToken.get()); // exception 발생 가능
-                if (valid) {
-                    jwtService.extractUserIdByRefresh(refreshToken.get())
-                            .flatMap(id -> findAndAuthenticateUser(id, "RefreshToken"))
-                            .ifPresentOrElse(
-                                    this::setAuthentication,
-                                    () -> log.warn("RefreshToken 유효하지만 사용자 정보 없음")
-                            );
-                    filterChain.doFilter(request, response);
-                    return;
-                }
+            // 2. Refresh Token 검증 (쿠키에서 추출)
+            Optional<String> refreshToken = extractRefreshTokenFromCookie(request, refreshTokenHeader);
+            if (refreshToken.isPresent() && jwtService.isRefreshTokenValid(refreshToken.get())) {
+                jwtService.extractUserIdByRefresh(refreshToken.get())
+                        .flatMap(id -> findAndAuthenticateUser(id, "Authorization_refresh"))
+                        .ifPresentOrElse(
+                                this::setAuthentication,
+                                () -> log.warn("RefreshToken 유효하지만 사용자 정보 없음")
+                        );
+                filterChain.doFilter(request, response);
+                return;
             }
 
-            // 둘 다 없거나 유효하지 않음 → 다음 필터로 그냥 넘김
+            // 둘 다 없음 → 그냥 다음 필터로
             filterChain.doFilter(request, response);
 
         } catch (UnauthorizedException e) {
@@ -105,7 +101,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             sendErrorResponse(response, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다.");
         }
     }
-
 
     private Optional<User> findAndAuthenticateUser(String id, String tokenType) {
         try {
@@ -118,7 +113,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         }
     }
 
-    private Optional<String> extractToken(HttpServletRequest request, String headerName) {
+    private Optional<String> extractAccessToken(HttpServletRequest request, String headerName) {
         String bearerToken = request.getHeader(headerName);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return Optional.of(bearerToken.substring(7));
@@ -126,10 +121,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         return Optional.empty();
     }
 
-    private Optional<String> extractRefreshToken(HttpServletRequest request, String headerName) {
-        String refreshToken = request.getHeader(headerName);
-        if (refreshToken != null) {
-            return Optional.of(refreshToken);
+    public static Optional<String> extractRefreshTokenFromCookie(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals(cookieName)) {
+                    return Optional.of(cookie.getValue());
+                }
+            }
         }
         return Optional.empty();
     }

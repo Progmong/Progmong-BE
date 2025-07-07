@@ -9,6 +9,7 @@ import com.progmong.api.user.dto.UserInfoResponseDto;
 import com.progmong.api.user.dto.UserLoginRequestDto;
 import com.progmong.api.user.dto.UserLoginResponseDto;
 import com.progmong.api.user.dto.UserRegisterRequestDto;
+import com.progmong.api.user.jwt.filter.JwtAuthenticationProcessingFilter;
 import com.progmong.api.user.service.EmailService;
 import com.progmong.api.user.service.UserService;
 import com.progmong.common.config.security.SecurityUser;
@@ -22,6 +23,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 
 @RequiredArgsConstructor
@@ -113,8 +117,8 @@ public class UserController {
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserLoginResponseDto>> login(
-            @RequestBody UserLoginRequestDto userLoginRequestDto) {
-        UserLoginResponseDto responseDto = userService.login(userLoginRequestDto);
+            @RequestBody UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
+        UserLoginResponseDto responseDto = userService.login(userLoginRequestDto, response);
         return ApiResponse.success(SuccessStatus.USER_LOGGED_IN, responseDto);
     }
 
@@ -204,14 +208,12 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Refresh Token이 유효하지 않습니다.")
     })
     public ResponseEntity<ApiResponse<UserAccessTokenResponseDto>> reissueAccessToken(
-            HttpServletRequest request) {
+            HttpServletRequest request, HttpServletResponse response) {
 
-        String refreshTokenHeader = request.getHeader("Authorization_refresh");
-        if (refreshTokenHeader == null) {
-            throw new UnauthorizedException("Refresh Token이 없습니다.");
-        }
+        String refreshToken = JwtAuthenticationProcessingFilter.extractRefreshTokenFromCookie(request, "Authorization_refresh")
+                .orElseThrow(() -> new UnauthorizedException("Refresh Token이 없습니다."));
 
-        UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshTokenHeader);
+        UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshToken,response);
         return ApiResponse.success(SuccessStatus.OK, responseDto);
     }
 
@@ -229,4 +231,13 @@ public class UserController {
         return ApiResponse.success_only(SuccessStatus.USER_DELETED);
     }
 
+    @Operation(summary = "로그아웃 API", description = "Refresh Token 쿠키 삭제 및 DB 토큰 삭제")
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @AuthenticationPrincipal SecurityUser user,
+            HttpServletResponse response) {
+
+        userService.logout(user.getId(), response);
+        return ApiResponse.success_only(SuccessStatus.USER_LOGGED_OUT);
+    }
 }

@@ -8,6 +8,8 @@ import com.progmong.api.user.repository.UserRepository;
 import com.progmong.common.exception.UnauthorizedException;
 import java.util.Date;
 import java.util.Optional;
+
+import jakarta.servlet.http.Cookie;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +132,34 @@ public class JwtService {
             return Optional.empty();
         }
     }
+
+    public void updateRefreshToken(Long userId, String newRefreshToken) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.updateRefreshToken(newRefreshToken); // User 엔티티에 이 메서드 있어야 함
+            userRepository.save(user);
+        });
+    }
+
+    public Cookie createRefreshTokenCookie(String refreshToken) {
+        Cookie refreshCookie = new Cookie("Authorization_refresh", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(false); // 개발환경일 때 false
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
+        // refreshCookie.setDomain("localhost");  // 개발환경에서는 생략 권장
+        refreshCookie.setAttribute("SameSite", "Lax"); // 혹은 "None" + Secure:true 환경에서
+        return refreshCookie;
+    }
+
+
+    public void removeRefreshToken(Long userId) {
+        userRepository.findById(userId)
+                .ifPresent(user -> {
+                    user.removeRefreshToken();
+                    userRepository.save(user);
+                });
+    }
+
 
 
 }

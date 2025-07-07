@@ -42,7 +42,8 @@ public class SecurityConfig {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Arrays.asList(
                             "http://localhost:5200",
-                            "http://localhost:5173"
+                            "http://localhost:5173",
+                            "https://progmong-fe.vercel.app"
                     ));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
@@ -66,6 +67,7 @@ public class SecurityConfig {
                         ).permitAll() // 스웨거, H2, healthCheck 허가
                         .requestMatchers("/api/v1/users/login",
                                 "/api/v1/users/register",
+                                "/api/vi/users/reissue",
                                 "/api/v1/solvedac/**",
                                 "/api/v1/users/verify-email",
                                 "/api/v1/users/verification-email-code",

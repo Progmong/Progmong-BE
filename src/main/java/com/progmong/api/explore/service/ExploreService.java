@@ -3,8 +3,6 @@ package com.progmong.api.explore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.progmong.api.explore.dto.ProblemRecordListQueryDto;
-import com.progmong.api.explore.dto.ProblemRecordQueryDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
 import com.progmong.api.explore.entity.Problem;
@@ -264,55 +262,38 @@ public class ExploreService {
     }
 
     @Transactional(readOnly = true)
-    public ProblemRecordListQueryDto getAllProblemRecords(Long userId) {
-        // 1. 사용자 조회
+    public RecommendProblemListResponseDto getAllProblemRecords(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        // 2. 전체 사냥 기록 조회
         List<ProblemRecord> records = problemRecordRepository.findByUser(user, null).getContent();
 
-        // 3. DTO 변환
-        List<ProblemRecordQueryDto> recordDtos = records.stream()
-                .map(ProblemRecordQueryDto::fromEntity)
+        List<RecommendProblemResponseDto> recommendDtos = IntStream.range(0, records.size())
+                .mapToObj(i -> convertRecordToRecommendDto(records.get(i), i + 1, toStatus(records.get(i).getResult())))
                 .toList();
 
-        // 4. totalCount 계산
-        long totalCount = problemRecordRepository.countByUser(user);
-
-        return ProblemRecordListQueryDto.of(recordDtos, totalCount);
+        return new RecommendProblemListResponseDto(recommendDtos, true, null); // 기록은 종료된 전투이므로 isFinish = true
     }
 
+
     @Transactional(readOnly = true)
-    public ProblemRecordListQueryDto getRecentProblemRecords(Long userId, int page, int size) {
-        // 1. 사용자 조회
+    public RecommendProblemListResponseDto getRecentProblemRecords(Long userId, int page, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        // 2. 페이지네이션 설정
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-
-        // 3. 사냥 기록 조회
         Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
 
-        // 4. DTO 변환
-        List<ProblemRecordQueryDto> recordDtos = recordsPage.getContent().stream()
-                .map(ProblemRecordQueryDto::fromEntity)
+        List<RecommendProblemResponseDto> recommendDtos = IntStream.range(0, recordsPage.getContent().size())
+                .mapToObj(i -> convertRecordToRecommendDto(recordsPage.getContent().get(i), i + 1,
+                        toStatus(recordsPage.getContent().get(i).getResult())))
                 .toList();
 
-        // 5. 총 개수 포함 응답 반환
-        return ProblemRecordListQueryDto.of(recordDtos, recordsPage.getTotalElements());
+        return new RecommendProblemListResponseDto(recommendDtos, true, null);
     }
 
-    @Transactional(readOnly = true)
-    public long getProblemRecordCount(Long userId) {
-        // 1. 사용자 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        // 2. 해당 사용자의 총 사냥 기록 수 반환
-        return problemRecordRepository.countByUser(user);
-    }
+
 
     public boolean checkSolvedAcProblem(String bojId, int problemId) {
         String url = "https://solved.ac/api/v3/search/problem?query=solved_by:" + bojId + "+id:" + problemId;
@@ -335,6 +316,27 @@ public class ExploreService {
         } catch (Exception e) {
             throw new BaseException(HttpStatus.INTERNAL_SERVER_ERROR, "solved.ac API 호출 실패");
         }
+    }
+
+    private RecommendProblemResponseDto convertRecordToRecommendDto(ProblemRecord record, int sequence,
+                                                                    RecommendStatus status) {
+        Problem p = record.getProblem();
+        return new RecommendProblemResponseDto(
+                p.getId(),
+                p.getTitle(),
+                p.getLevel(),
+                RecommendProblemResponseDto.levelToTier(p.getLevel()),
+                p.getMainTag(),
+                p.getSolvedUserCount(),
+                status,
+                sequence,
+                0,  // monsterImageIndex는 기록 기반으로는 추정 불가하므로 0 또는 랜덤
+                p.getMainTagKo()
+        );
+    }
+
+    private RecommendStatus toStatus(Result result) {
+        return result == Result.성공 ? RecommendStatus.성공 : RecommendStatus.패스;
     }
 
 
