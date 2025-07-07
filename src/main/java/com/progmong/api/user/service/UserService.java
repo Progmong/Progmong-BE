@@ -179,6 +179,20 @@ public class UserService {
         userRepository.delete(user);
     }
 
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+    }
+
+    public UserInfoResponseDto toUserInfoResponseDto(User user) {
+        return new UserInfoResponseDto(
+                user.getId(),
+                user.getBojId(),
+                user.getEmail(),
+                user.getNickname()
+        );
+    }
     @Transactional
     public void logout(Long userId, HttpServletResponse response) {
         // DB에서 리프레시 토큰 삭제

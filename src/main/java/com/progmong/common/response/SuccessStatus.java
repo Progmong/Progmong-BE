@@ -51,6 +51,7 @@ public enum SuccessStatus {
     PET_MESSAGE_UPDATED(HttpStatus.OK, "펫 메시지가 변경되었습니다."),
     PET_PROUD_STATUS_LOADED(HttpStatus.OK, "펫 자랑 상태 조회 성공"),
     UPDATE_USER_NICKNAME_SUCCESS(HttpStatus.OK, "닉네임이 성공적으로 변경되었습니다."),
+    MYPAGE_SUCCESS(HttpStatus.OK, "마이페이지 조회 성공"),
     ;
 
 
