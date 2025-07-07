@@ -13,7 +13,11 @@ import com.progmong.common.exception.BadRequestException;
 import com.progmong.common.exception.NotFoundException;
 import com.progmong.common.exception.UnauthorizedException;
 import com.progmong.common.response.ErrorStatus;
+
 import java.time.LocalDateTime;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -60,8 +64,8 @@ public class UserService {
     }
 
     // 로그인
-    @Transactional(readOnly = true)
-    public UserLoginResponseDto login(UserLoginRequestDto userLoginRequestDto) {
+    @Transactional
+    public UserLoginResponseDto login(UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
 
         // 이메일로 회원 검색
         User user = userRepository.findByEmail(userLoginRequestDto.getEmail())
@@ -77,8 +81,11 @@ public class UserService {
         // JWT 토큰 생성 (Refresh)
         String refreshToken = jwtService.createRefreshToken(user.getId());
 
+        Cookie refreshCookie = jwtService.createRefreshTokenCookie((refreshToken));
+        response.addCookie(refreshCookie);
 
-        return new UserLoginResponseDto(accessToken, refreshToken);
+        jwtService.updateRefreshToken(user.getId(), refreshToken);
+        return new UserLoginResponseDto(accessToken, null);
     }
 
     // 비밀번호 초기화
@@ -132,21 +139,37 @@ public class UserService {
     }
 
     // Access Token 재발급
-    public UserAccessTokenResponseDto reissueAccessTokenByRefreshToken(String refreshToken) {
+    public UserAccessTokenResponseDto reissueAccessTokenByRefreshToken(String refreshToken, HttpServletResponse response) {
+        // 1) JWT 토큰 서명 및 만료 검사
         if (!jwtService.isRefreshTokenValid(refreshToken)) {
             throw new UnauthorizedException("Refresh Token이 유효하지 않습니다.");
         }
 
+        // 2) 토큰에서 userId 추출
         String userId = jwtService.extractUserIdByRefresh(refreshToken)
                 .orElseThrow(() -> new UnauthorizedException("토큰에서 사용자 정보를 추출할 수 없습니다."));
 
+        // 3) DB에서 해당 userId의 사용자 정보 조회
         User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new NotFoundException("해당 사용자를 찾을 수 없습니다."));
 
+        // 4) DB에 저장된 refreshToken과 요청에 온 refreshToken 비교
+        if (!refreshToken.equals(user.getRefreshToken())) {
+            throw new UnauthorizedException("DB에 저장된 Refresh Token과 일치하지 않습니다.");
+        }
+
+        // 5) 새로운 Access Token 및 Refresh Token 생성 및 저장
         String newAccessToken = jwtService.createAccessToken(user.getId());
+        String newRefreshToken = jwtService.createRefreshToken(user.getId());
+
+        jwtService.updateRefreshToken(user.getId(), newRefreshToken);
+
+        Cookie refreshCookie = jwtService.createRefreshTokenCookie(newRefreshToken);
+        response.addCookie(refreshCookie);
 
         return new UserAccessTokenResponseDto(newAccessToken);
     }
+
 
     @Transactional
     public void deleteUser(Long userId) {
@@ -155,5 +178,20 @@ public class UserService {
 
         userRepository.delete(user);
     }
+
+    @Transactional
+    public void logout(Long userId, HttpServletResponse response) {
+        // DB에서 리프레시 토큰 삭제
+        jwtService.removeRefreshToken(userId);
+
+        // 쿠키 삭제 (sameSite 주의)
+        Cookie deleteCookie = new Cookie("RefreshTokenCookie", null);
+        deleteCookie.setHttpOnly(true);
+        deleteCookie.setSecure(true);
+        deleteCookie.setPath("/");
+        deleteCookie.setMaxAge(0); // 즉시 만료
+        response.addCookie(deleteCookie);
+    }
+
 
 }
