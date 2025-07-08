@@ -43,7 +43,9 @@ public class SecurityConfig {
                     config.setAllowedOrigins(Arrays.asList(
                             "http://localhost:5200",
                             "http://localhost:5173",
-                            "https://progmong-fe.vercel.app"
+                            "https://progmong-fe.vercel.app",
+                            "https://api-progmong.shop"
+                        
                     ));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowCredentials(true);
