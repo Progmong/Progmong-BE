@@ -27,7 +27,7 @@ public class MyPageFacadeService {
         // 2. 펫 정보
         UserPetFullDto petInfo = userPetService.getUserPetFullInfo(userId);
         // 3. 최근 탐험 기록 (5개)
-        RecommendProblemListResponseDto recentExplores = exploreService.currentExplore(userId);
+        RecommendProblemListResponseDto recentExplores = exploreService.getMyPageRecentExplore(userId);
         // 4. 관심 태그
         List<InterestTagResponseDto> tags = tagService.getUserInterestTags(userId);
 
