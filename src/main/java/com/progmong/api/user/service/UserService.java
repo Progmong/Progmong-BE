@@ -207,5 +207,17 @@ public class UserService {
         response.addCookie(deleteCookie);
     }
 
+    // 유저 비밀번호 변경
+    @Transactional
+    public void changePassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+
+        // 새 비밀번호로 업데이트
+        user.updatePassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
 
 }

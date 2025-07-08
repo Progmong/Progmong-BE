@@ -210,10 +210,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserAccessTokenResponseDto>> reissueAccessToken(
             HttpServletRequest request, HttpServletResponse response) {
 
-        String refreshToken = JwtAuthenticationProcessingFilter.extractRefreshTokenFromCookie(request, "Authorization_refresh")
+        String refreshToken = JwtAuthenticationProcessingFilter.extractRefreshTokenFromCookie(request,
+                        "Authorization_refresh")
                 .orElseThrow(() -> new UnauthorizedException("Refresh Token이 없습니다."));
 
-        UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshToken,response);
+        UserAccessTokenResponseDto responseDto = userService.reissueAccessTokenByRefreshToken(refreshToken, response);
         return ApiResponse.success(SuccessStatus.OK, responseDto);
     }
 
@@ -240,4 +241,27 @@ public class UserController {
         userService.logout(user.getId(), response);
         return ApiResponse.success_only(SuccessStatus.USER_LOGGED_OUT);
     }
+
+
+    // 비밀번호 변경 API
+    @Operation(
+            summary = "비밀번호 변경 API",
+            description = "인증된 사용자의 비밀번호를 변경합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패")
+    })
+    @PatchMapping("/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal SecurityUser securityUser,
+            @RequestBody String newPassword) {
+        if (newPassword == null || newPassword.isEmpty()) {
+            throw new BadRequestException(ErrorStatus.VALIDATION_PASSWORD_EMPTY_EXCEPTION.getMessage());
+        }
+        userService.changePassword(securityUser.getId(), newPassword);
+        return ApiResponse.success_only(SuccessStatus.PASSWORD_CHANGED_SUCCESS);
+    }
+
 }

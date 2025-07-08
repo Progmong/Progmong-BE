@@ -25,6 +25,7 @@ public enum ErrorStatus {
     RECOMMEND_PROBLEM_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 추천 문제가 있습니다"),
     POST_COMMENT_MISMATCH(HttpStatus.BAD_REQUEST, "수정할 댓글의 게시글 ID가 일지하지 않습니다"),
     NO_AUTH_COMMENT(HttpStatus.BAD_REQUEST, "댓글에 대한 권한이 없습니다."),
+    VALIDATION_PASSWORD_EMPTY_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호는 비워둘 수 없습니다."),
 
 
     // 401 UNAUTHORIZED

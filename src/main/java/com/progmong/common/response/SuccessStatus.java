@@ -33,7 +33,7 @@ public enum SuccessStatus {
     EXPLORE_START(HttpStatus.OK, "탐험 시작 성공"),
     GET_ALL_RECORD(HttpStatus.OK, "모든 사냥 기록 조회에 성공했습니다."),
     GET_PAGED_RECORD(HttpStatus.OK, "페이지네이션이 적용된 사냥 기록 조회에 성공했습니다."),
-
+    PASSWORD_CHANGED_SUCCESS(HttpStatus.OK, "비밀번호가 성공적으로 변경되었습니다."),
 
 
     // 커뮤니티
