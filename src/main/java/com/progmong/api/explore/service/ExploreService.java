@@ -278,6 +278,7 @@ public class ExploreService {
 
 
     @Transactional(readOnly = true)
+    // 현재 탐험 기록을 페이지네이션하여 조회
     public ExploreRecordsResponse getPagedExploreHistory(Long userId, int page, int size) {
         if (page == 0) {
             List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
@@ -301,6 +302,7 @@ public class ExploreService {
         }
 
         // 실제 기록은 page - 1 페이지부터 조회
+        // 페이지네이션 처리
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 

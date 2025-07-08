@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-/**
- * 탐험 기록 응답 DTO
- * - 페이지 정보와 탐험 완료 여부, 총 경험치 정보를 포함
- */
+// 탐험 기록 응답 DTO
+// - PagedResponseDto<RecommendProblemResponseDto> pageInfo: 페이지 정보와 문제 목록
 public class ExploreRecordsResponse {
     private PagedResponseDto<RecommendProblemResponseDto> pageInfo;
     private boolean finish;
