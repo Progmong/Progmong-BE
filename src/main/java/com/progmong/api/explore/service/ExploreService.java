@@ -143,7 +143,6 @@ public class ExploreService {
         if (next.isPresent()) {
             next.get().updateStatus(RecommendStatus.전투);
         } else {
-
         }
 
         // 4. 다음 문제 없으면 결과, 있으면 다음 문제
@@ -277,11 +276,23 @@ public class ExploreService {
 
 
     @Transactional(readOnly = true)
-    public RecommendProblemListResponseDto getRecentProblemRecords(Long userId, int page, int size) {
+    public RecommendProblemListResponseDto getPagedExploreHistory(Long userId, int page, int size) {
+        if (page == 0) {
+            // 추천 문제가 남아 있다면 0페이지는 그것으로 채운다
+            List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
+            if (!recommendProblems.isEmpty()) {
+                List<RecommendProblemResponseDto> dtoList = recommendProblems.stream()
+                        .map(RecommendProblemResponseDto::fromEntity)
+                        .toList();
+                return new RecommendProblemListResponseDto(dtoList, false, null);
+            }
+        }
+
+        // 추천 문제가 없거나 page > 0이면 problem_record에서 최신순으로 페이지네이션
+        Pageable pageable = PageRequest.of(page - (recommendProblemRepository.existsByUserId(userId) ? 1 : 0), size, Sort.by(Sort.Direction.DESC, "id"));
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
 
         List<RecommendProblemResponseDto> recommendDtos = IntStream.range(0, recordsPage.getContent().size())
@@ -291,6 +302,7 @@ public class ExploreService {
 
         return new RecommendProblemListResponseDto(recommendDtos, true, null);
     }
+
 
 
 

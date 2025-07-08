@@ -91,7 +91,7 @@ public class ExploreController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        RecommendProblemListResponseDto responseDto = exploreService.getRecentProblemRecords(
+        RecommendProblemListResponseDto responseDto = exploreService.getPagedExploreHistory(
                 securityUser.getId(), page, size);
         return ApiResponse.success(SuccessStatus.GET_PAGED_RECORD, responseDto);
     }
