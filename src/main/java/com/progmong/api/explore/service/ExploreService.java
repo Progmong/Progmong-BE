@@ -278,65 +278,82 @@ public class ExploreService {
 
 
     @Transactional(readOnly = true)
-// 현재 탐험 기록을 페이지네이션하여 조회
     public ExploreRecordsResponse getPagedExploreHistory(Long userId, int page, int size) {
-        // 0. 유저 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        // 1. 추천 문제 존재 여부 확인 (page = 0)
+        // 추천 문제 조회
+        List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
+        int recommendCount = recommendProblems.size();
+
+        // 전체 기록 개수 조회
+        long recordCount = problemRecordRepository.countByUserId(userId);
+        int totalElements = recommendCount + (int) recordCount;
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        // page = 0 → 추천 + 일부 기록
         if (page == 0) {
-            List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
-            if (!recommendProblems.isEmpty()) {
-                List<RecommendProblemResponseDto> dtos = recommendProblems.stream()
-                        .map(RecommendProblemResponseDto::fromEntity)
+            List<RecommendProblemResponseDto> recommendDtos = recommendProblems.stream()
+                    .map(RecommendProblemResponseDto::fromEntity)
+                    .toList();
+
+            int remain = size - recommendDtos.size();
+            List<RecommendProblemResponseDto> result = new ArrayList<>(recommendDtos);
+
+            if (remain > 0) {
+                Pageable pageable = PageRequest.of(0, remain, Sort.by(Sort.Direction.DESC, "id"));
+                List<ProblemRecord> recordList = problemRecordRepository.findByUser(user, pageable).getContent();
+
+                List<RecommendProblemResponseDto> recordDtos = IntStream.range(0, recordList.size())
+                        .mapToObj(i -> convertRecordToRecommendDto(recordList.get(i), i + 1, toStatus(recordList.get(i).getResult())))
                         .toList();
 
-                // 총 기록 개수 조회
-                long recordCount = problemRecordRepository.countByUserId(userId);
-                int totalElements = dtos.size() + (int) recordCount;
-                int totalPages = (int) Math.ceil((double) totalElements / size);
-
-                boolean hasNext = recordCount > 0;
-                boolean isLast = recordCount == 0;
-
-                PagedResponseDto<RecommendProblemResponseDto> pagedDto = PagedResponseDto.<RecommendProblemResponseDto>builder()
-                        .content(dtos)
-                        .page(0)
-                        .size(dtos.size())
-                        .totalPages(totalPages)
-                        .totalElements(totalElements)
-                        .hasNext(hasNext)
-                        .isFirst(true)
-                        .isLast(isLast)
-                        .build();
-
-                return new ExploreRecordsResponse(pagedDto, false, null);
+                result.addAll(recordDtos);
             }
+
+            return new ExploreRecordsResponse(
+                    PagedResponseDto.<RecommendProblemResponseDto>builder()
+                            .content(result)
+                            .page(0)
+                            .size(size)
+                            .totalPages(totalPages)
+                            .totalElements(totalElements)
+                            .hasNext(totalPages > 1)
+                            .isFirst(true)
+                            .isLast(totalPages == 1)
+                            .build(),
+                    false,
+                    null
+            );
         }
 
-        // 2. 추천 문제가 없거나 page > 0인 경우 → 기록 조회
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
-        Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
+        // page >= 1 → 기록 전용 (recommendCount만큼 offset 계산)
+        int offset = page * size - recommendCount;
+        if (offset < 0) offset = 0;
 
-        List<RecommendProblemResponseDto> content = IntStream.range(0, recordsPage.getContent().size())
-                .mapToObj(i -> convertRecordToRecommendDto(recordsPage.getContent().get(i), i + 1,
-                        toStatus(recordsPage.getContent().get(i).getResult())))
+        Pageable pageable = PageRequest.of(offset / size, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<ProblemRecord> recordPage = problemRecordRepository.findByUser(user, pageable);
+
+        List<RecommendProblemResponseDto> recordDtos = IntStream.range(0, recordPage.getContent().size())
+                .mapToObj(i -> convertRecordToRecommendDto(recordPage.getContent().get(i), i + 1, toStatus(recordPage.getContent().get(i).getResult())))
                 .toList();
 
-        PagedResponseDto<RecommendProblemResponseDto> pagedDto = PagedResponseDto.<RecommendProblemResponseDto>builder()
-                .content(content)
-                .page(recordsPage.getNumber() + 1)
-                .size(recordsPage.getSize())
-                .totalPages(recordsPage.getTotalPages())
-                .totalElements(recordsPage.getTotalElements())
-                .hasNext(recordsPage.hasNext())
-                .isFirst(recordsPage.isFirst())
-                .isLast(recordsPage.isLast())
-                .build();
-
-        return new ExploreRecordsResponse(pagedDto, true, null);
+        return new ExploreRecordsResponse(
+                PagedResponseDto.<RecommendProblemResponseDto>builder()
+                        .content(recordDtos)
+                        .page(page)
+                        .size(size)
+                        .totalPages(totalPages)
+                        .totalElements(totalElements)
+                        .hasNext(page < totalPages - 1)
+                        .isFirst(false)
+                        .isLast(page == totalPages - 1)
+                        .build(),
+                true,
+                null
+        );
     }
+
 
 
     @Transactional(readOnly = true)
