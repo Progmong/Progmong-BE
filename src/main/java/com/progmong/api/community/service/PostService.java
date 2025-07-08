@@ -2,6 +2,7 @@ package com.progmong.api.community.service;
 
 import com.progmong.api.community.dto.*;
 import com.progmong.api.community.entity.Post;
+import com.progmong.api.community.entity.PostCategory;
 import com.progmong.api.community.repository.CommentRepository;
 import com.progmong.api.community.repository.PostRepository;
 import com.progmong.api.community.util.HtmlSanitizer;
@@ -26,6 +27,8 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+
+
 
     @Transactional
     public PostDetailResDto postWrite(Long userId, PostWriteDto postWriteDto) {
@@ -75,8 +78,28 @@ public class PostService {
     }
 
     @Transactional
+    public List<PostListElementResDto> findByCategory(PostCategory postCategory){
+        List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(postCategory);
+
+        List<PostListElementResDto> result = new ArrayList<>();
+
+        for (Post post : posts) {
+            result.add(PostListElementResDto.builder()
+                    .userId(post.getUser().getId())
+                    .nickname(post.getUser().getNickname())
+                    .postId(post.getId())
+                    .title(post.getTitle())
+                    .likeCount(post.getLikeCount())
+                    .createdAt(post.getCreatedAt())
+                    .build());
+        }
+
+        return result;
+    }
+
+    @Transactional
     public PostDetailResDto findById(Long userId, Long postId) {
-        // id로 포스트 검색
+        // postId로 검색
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.POST_NOT_FOUND.getMessage()));
 
@@ -87,6 +110,8 @@ public class PostService {
 
         // html 상에서 js 공격을 막기 위한 코드
         String safeHtml = HtmlSanitizer.sanitize(post.getContent());
+
+        log.error(safeHtml);
 
         PostDetailResDto result = PostDetailResDto.builder()
                 .postId(post.getId())

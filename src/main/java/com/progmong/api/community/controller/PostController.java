@@ -1,6 +1,7 @@
 package com.progmong.api.community.controller;
 
 import com.progmong.api.community.dto.*;
+import com.progmong.api.community.entity.PostCategory;
 import com.progmong.api.community.service.PostService;
 import com.progmong.common.config.security.SecurityUser;
 import com.progmong.common.response.ApiResponse;
@@ -27,10 +28,19 @@ public class PostController {
     @GetMapping("/post/all")
     @Operation(summary = "게시글 목록 조회", description = "제목,")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 등록 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글 조회 성공"),
     })
     public ResponseEntity<ApiResponse<List<PostListElementResDto>>> all() {
         return ApiResponse.success(SuccessStatus.POST_ALL_SUCCESS, postService.findAll());
+    }
+
+    @GetMapping("{category}/post/all")
+    @Operation(summary = "게시글 목록 조회", description = "제목,")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "카테고리별 게시글 조회 성공"),
+    })
+    public ResponseEntity<ApiResponse<List<PostListElementResDto>>> categoryAll(@PathVariable PostCategory category) {
+        return ApiResponse.success(SuccessStatus.POST_ALL_SUCCESS, postService.findByCategory(category));
     }
 
     @PostMapping("/post/write")

@@ -16,6 +16,7 @@ public enum SuccessStatus {
     // 커스텀 성공 메시지
     USER_REGISTERED(HttpStatus.CREATED, "회원가입이 완료되었습니다."),
     USER_LOGGED_IN(HttpStatus.OK, "로그인이 성공적으로 완료되었습니다."),
+    USER_LOGGED_OUT(HttpStatus.OK, "로그아웃이 성공적으로 완료되었습니다."),
     USER_DELETED(HttpStatus.OK, "회원 탈퇴가 완료되었습니다."),
     SEND_EMAIL_VERIFICATION_CODE_SUCCESS(HttpStatus.OK, "이메일 인증코드 발송 성공"),
     SEND_EMAIL_VERIFICATION_SUCCESS(HttpStatus.OK, "이메일 코드 인증 성공"),
@@ -32,6 +33,7 @@ public enum SuccessStatus {
     EXPLORE_START(HttpStatus.OK, "탐험 시작 성공"),
     GET_ALL_RECORD(HttpStatus.OK, "모든 사냥 기록 조회에 성공했습니다."),
     GET_PAGED_RECORD(HttpStatus.OK, "페이지네이션이 적용된 사냥 기록 조회에 성공했습니다."),
+
 
 
     // 커뮤니티
@@ -51,6 +53,7 @@ public enum SuccessStatus {
     PET_MESSAGE_UPDATED(HttpStatus.OK, "펫 메시지가 변경되었습니다."),
     PET_PROUD_STATUS_LOADED(HttpStatus.OK, "펫 자랑 상태 조회 성공"),
     UPDATE_USER_NICKNAME_SUCCESS(HttpStatus.OK, "닉네임이 성공적으로 변경되었습니다."),
+    MYPAGE_SUCCESS(HttpStatus.OK, "마이페이지 조회 성공"),
 
     // 댓글
     COMMENT_ALL_SUCCESS(HttpStatus.OK, "댓글 목록 조회 성공"),
