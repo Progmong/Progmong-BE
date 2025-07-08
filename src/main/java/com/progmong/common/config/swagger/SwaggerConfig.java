@@ -39,6 +39,7 @@ public class SwaggerConfig {
 
         Server server = new Server();
         server.setUrl("http://localhost:8100");
+        Server prodServer = new Server().url("https://api-progmong.shop");
 
         return new OpenAPI()
                 .info(new Info()
@@ -49,6 +50,7 @@ public class SwaggerConfig {
                         .addSecuritySchemes(accessTokenHeader, accessTokenScheme)
                         .addSecuritySchemes(refreshTokenHeader, refreshTokenScheme))
                 .addServersItem(server)
+                .addServersItem(prodServer)
                 .addSecurityItem(accessTokenRequirement)
                 .addSecurityItem(refreshTokenRequirement);
     }
