@@ -3,6 +3,8 @@ package com.progmong.api.explore.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.progmong.api.explore.dto.ExploreRecordsResponse;
+import com.progmong.api.explore.dto.PagedResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemListResponseDto;
 import com.progmong.api.explore.dto.RecommendProblemResponseDto;
 import com.progmong.api.explore.entity.Problem;
@@ -276,32 +278,54 @@ public class ExploreService {
 
 
     @Transactional(readOnly = true)
-    public RecommendProblemListResponseDto getPagedExploreHistory(Long userId, int page, int size) {
+    public ExploreRecordsResponse getPagedExploreHistory(Long userId, int page, int size) {
         if (page == 0) {
-            // 추천 문제가 남아 있다면 0페이지는 그것으로 채운다
             List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
             if (!recommendProblems.isEmpty()) {
-                List<RecommendProblemResponseDto> dtoList = recommendProblems.stream()
-                        .map(RecommendProblemResponseDto::fromEntity)
-                        .toList();
-                return new RecommendProblemListResponseDto(dtoList, false, null);
+                List<RecommendProblemResponseDto> dtos = recommendProblems.stream()
+                        .map(RecommendProblemResponseDto::fromEntity).toList();
+
+                PagedResponseDto<RecommendProblemResponseDto> pagedDto = PagedResponseDto.<RecommendProblemResponseDto>builder()
+                        .content(dtos)
+                        .page(0)
+                        .size(dtos.size())
+                        .totalPages(1)
+                        .totalElements(dtos.size())
+                        .hasNext(false)
+                        .isFirst(true)
+                        .isLast(true)
+                        .build();
+
+                return new ExploreRecordsResponse(pagedDto, false, null);
             }
         }
 
-        // 추천 문제가 없거나 page > 0이면 problem_record에서 최신순으로 페이지네이션
-        Pageable pageable = PageRequest.of(page - (recommendProblemRepository.existsByUserId(userId) ? 1 : 0), size, Sort.by(Sort.Direction.DESC, "id"));
-
+        // 실제 기록은 page - 1 페이지부터 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
 
-        List<RecommendProblemResponseDto> recommendDtos = IntStream.range(0, recordsPage.getContent().size())
+        List<RecommendProblemResponseDto> content = IntStream.range(0, recordsPage.getContent().size())
                 .mapToObj(i -> convertRecordToRecommendDto(recordsPage.getContent().get(i), i + 1,
                         toStatus(recordsPage.getContent().get(i).getResult())))
                 .toList();
 
-        return new RecommendProblemListResponseDto(recommendDtos, true, null);
+        PagedResponseDto<RecommendProblemResponseDto> pagedDto = PagedResponseDto.<RecommendProblemResponseDto>builder()
+                .content(content)
+                .page(recordsPage.getNumber() + 1)
+                .size(recordsPage.getSize())
+                .totalPages(recordsPage.getTotalPages())
+                .totalElements(recordsPage.getTotalElements())
+                .hasNext(recordsPage.hasNext())
+                .isFirst(recordsPage.isFirst())
+                .isLast(recordsPage.isLast())
+                .build();
+
+        return new ExploreRecordsResponse(pagedDto, true, null);
     }
+
 
 
 
