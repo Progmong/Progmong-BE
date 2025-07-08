@@ -10,9 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ProblemRecordRepository extends JpaRepository<ProblemRecord, Long> {
 
     Page<ProblemRecord> findByUser(User user, Pageable pageable);
-
-    long countByUser(User user);
-
+    long countByUserId(Long userId);
     Optional<ProblemRecord> findByUserIdAndProblemId(Long userId, Long problemId);
 
 }
