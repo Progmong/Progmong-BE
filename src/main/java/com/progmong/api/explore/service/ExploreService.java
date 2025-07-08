@@ -328,10 +328,32 @@ public class ExploreService {
         return new ExploreRecordsResponse(pagedDto, true, null);
     }
 
+    @Transactional(readOnly = true)
+    public RecommendProblemListResponseDto getMyPageRecentExplore(Long userId) {
+        List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
 
+        if (!recommendProblems.isEmpty()) {
+            List<RecommendProblemResponseDto> dtos = recommendProblems.stream()
+                    .map(RecommendProblemResponseDto::fromEntity)
+                    .toList();
 
+            return new RecommendProblemListResponseDto(dtos, false, null);
+        }
 
+        // 추천 문제가 없으면 → 최근 탐험 기록 5건 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+        Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
+
+        List<RecommendProblemResponseDto> content = IntStream.range(0, recordsPage.getContent().size())
+                .mapToObj(i -> convertRecordToRecommendDto(recordsPage.getContent().get(i), i + 1,
+                        toStatus(recordsPage.getContent().get(i).getResult())))
+                .toList();
+
+        return new RecommendProblemListResponseDto(content, true, null);
+    }
 
     public boolean checkSolvedAcProblem(String bojId, int problemId) {
         String url = "https://solved.ac/api/v3/search/problem?query=solved_by:" + bojId + "+id:" + problemId;
