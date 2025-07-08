@@ -62,7 +62,6 @@ public class PostController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "게시글 조회에 실패했습니다"),
     })
     public ResponseEntity<ApiResponse<PostDetailResDto>> detail(@AuthenticationPrincipal SecurityUser securityUser, @PathVariable Long postId) {
-        System.out.println(postService.findById(securityUser.getId(), postId).getCreatedAt());
         return ApiResponse.success(SuccessStatus.POST_FIND_SUCCESS, postService.findById(securityUser.getId(), postId));
     }
 
