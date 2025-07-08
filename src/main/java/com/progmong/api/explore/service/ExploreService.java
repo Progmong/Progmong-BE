@@ -278,34 +278,44 @@ public class ExploreService {
 
 
     @Transactional(readOnly = true)
-    // 현재 탐험 기록을 페이지네이션하여 조회
+// 현재 탐험 기록을 페이지네이션하여 조회
     public ExploreRecordsResponse getPagedExploreHistory(Long userId, int page, int size) {
+        // 0. 유저 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        // 1. 추천 문제 존재 여부 확인 (page = 0)
         if (page == 0) {
             List<RecommendProblem> recommendProblems = recommendProblemRepository.findAllByUserIdOrderBySequence(userId);
             if (!recommendProblems.isEmpty()) {
                 List<RecommendProblemResponseDto> dtos = recommendProblems.stream()
-                        .map(RecommendProblemResponseDto::fromEntity).toList();
+                        .map(RecommendProblemResponseDto::fromEntity)
+                        .toList();
+
+                // 총 기록 개수 조회
+                long recordCount = problemRecordRepository.countByUserId(userId);
+                int totalElements = dtos.size() + (int) recordCount;
+                int totalPages = (int) Math.ceil((double) totalElements / size);
+
+                boolean hasNext = recordCount > 0;
+                boolean isLast = recordCount == 0;
 
                 PagedResponseDto<RecommendProblemResponseDto> pagedDto = PagedResponseDto.<RecommendProblemResponseDto>builder()
                         .content(dtos)
                         .page(0)
                         .size(dtos.size())
-                        .totalPages(1)
-                        .totalElements(dtos.size())
-                        .hasNext(false)
+                        .totalPages(totalPages)
+                        .totalElements(totalElements)
+                        .hasNext(hasNext)
                         .isFirst(true)
-                        .isLast(true)
+                        .isLast(isLast)
                         .build();
 
                 return new ExploreRecordsResponse(pagedDto, false, null);
             }
         }
 
-        // 실제 기록은 page - 1 페이지부터 조회
-        // 페이지네이션 처리
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
-
+        // 2. 추천 문제가 없거나 page > 0인 경우 → 기록 조회
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<ProblemRecord> recordsPage = problemRecordRepository.findByUser(user, pageable);
 
@@ -327,6 +337,7 @@ public class ExploreService {
 
         return new ExploreRecordsResponse(pagedDto, true, null);
     }
+
 
     @Transactional(readOnly = true)
     public RecommendProblemListResponseDto getMyPageRecentExplore(Long userId) {
