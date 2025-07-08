@@ -13,6 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**") // 모든 경로 허용
                 .allowedOrigins("http://localhost:5200") // Vite 프론트엔드 origin
                 .allowedOrigins("http://0.0.0.0:5200")
+                .allowedOrigins("https://api-progmong.shop")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true) // 쿠키 허용 시 필요
