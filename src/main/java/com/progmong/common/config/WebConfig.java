@@ -10,14 +10,16 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 모든 경로 허용
-                .allowedOrigins("http://localhost:5200") // Vite 프론트엔드 origin
-                .allowedOrigins("http://0.0.0.0:5200")
-                .allowedOrigins("https://api-progmong.shop")
+        registry.addMapping("/**")
+                .allowedOrigins(
+                    "http://localhost:5200",
+                    "http://0.0.0.0:5200",
+                    "https://api-progmong.shop" // ✅ Swagger 배포 URL 추가
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true) // 쿠키 허용 시 필요
-                .maxAge(3600); // preflight 캐싱 시간 (초)
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 
     // 게시글 이미지 저장을 위한 위치 설정
