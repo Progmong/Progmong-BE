@@ -7,7 +7,7 @@ name: Java CI/CD with Gradle and EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","ci-test-2" ]
 
 jobs:
   build-and-deploy:
