@@ -17,7 +17,7 @@ public enum SuccessStatus {
     USER_REGISTERED(HttpStatus.CREATED, "회원가입이 완료되었습니다."),
     USER_LOGGED_IN(HttpStatus.OK, "로그인이 성공적으로 완료되었습니다."),
     USER_LOGGED_OUT(HttpStatus.OK, "로그아웃이 성공적으로 완료되었습니다."),
-    USER_DELETED(HttpStatus.OK,"회원 탈퇴가 완료되었습니다."),
+    USER_DELETED(HttpStatus.OK, "회원 탈퇴가 완료되었습니다."),
     SEND_EMAIL_VERIFICATION_CODE_SUCCESS(HttpStatus.OK, "이메일 인증코드 발송 성공"),
     SEND_EMAIL_VERIFICATION_SUCCESS(HttpStatus.OK, "이메일 코드 인증 성공"),
     SEND_PASSWORD_RESET_CODE_SUCCESS(HttpStatus.OK, "비밀번호 초기화 코드 전송 성공"),
@@ -35,12 +35,14 @@ public enum SuccessStatus {
     GET_PAGED_RECORD(HttpStatus.OK, "페이지네이션이 적용된 사냥 기록 조회에 성공했습니다."),
 
 
+
     // 커뮤니티
     POST_WRITE_SUCCESS(HttpStatus.OK, "게시글 작성이 완료되었습니다."),
     POST_FIND_SUCCESS(HttpStatus.OK, "게시글 조회 성공"),
     POST_ALL_SUCCESS(HttpStatus.OK, "게시글 리스트 불러오기 성공"),
     POST_MODIFY_SUCCESS(HttpStatus.OK, "게시글 수정 성공"),
     POST_DELETED(HttpStatus.OK, "게시글이 삭제되었습니다."),
+    COMMUNIY_ACTIVE_SUCCESS(HttpStatus.OK, "커뮤니티 활동 이력 불러오기 성공"),
 
     GET_ALL_RECORD_COUNT(HttpStatus.OK, "모든 사냔 기록의 갯수 조회를 성공했습니다."),
     EXPLORE_GET(HttpStatus.OK, "탐험 조회 성공"),
@@ -52,7 +54,12 @@ public enum SuccessStatus {
     PET_PROUD_STATUS_LOADED(HttpStatus.OK, "펫 자랑 상태 조회 성공"),
     UPDATE_USER_NICKNAME_SUCCESS(HttpStatus.OK, "닉네임이 성공적으로 변경되었습니다."),
     MYPAGE_SUCCESS(HttpStatus.OK, "마이페이지 조회 성공"),
-    ;
+
+    // 댓글
+    COMMENT_ALL_SUCCESS(HttpStatus.OK, "댓글 목록 조회 성공"),
+    COMMENT_WRITE_SUCCESS(HttpStatus.OK, "댓글 작성 성공"),
+    COMMENT_MODIFY_SUCCESS(HttpStatus.OK, "댓글 수정 성공"),
+    COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제 성공");
 
 
     private final HttpStatus httpStatus;

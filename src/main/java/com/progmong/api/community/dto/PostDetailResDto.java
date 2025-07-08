@@ -15,6 +15,7 @@ public class PostDetailResDto {
     private String title;
     private String nickname;
     private String content;
+    private int viewCount;
     private int likeCount;
     private LocalDateTime createdAt;
 }
